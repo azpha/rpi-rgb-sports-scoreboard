@@ -311,6 +311,14 @@ def draw_all_games(canvas, games, start_index):
             for row in range(32):
                 canvas.SetPixel(offset + 63, row, 40, 40, 40)
 
+def draw_single_game(canvas, game):
+    league = game["league"]
+    home_logo = load_logo(league, game["home"])
+    away_logo = load_logo(league, game["away"])
+
+    draw_logo(canvas, away_logo, 0, 0)
+    draw_logo(canvas, home_logo, 0, 16)
+
 
 # --- Main loop ---
 def run():
@@ -324,46 +332,61 @@ def run():
     last_switch = time()
 
     current_games = get_all_scores()
+    preferred_team = [
+        "BUF",
+        "TOR",
+        "TB"
+    ]
+    preferred_game = []
     for game in current_games:
         print(game)
+        if game['home'] in preferred_team or game['away'] in preferred_team:
+            if game['status'] != 'Final':
+                preferred_game_on = True
+                preferred_game.append(game)
 
-    while True:
-        now = time()
+    if preferred_game_on:
+        while True:
+            draw_single_game(canvas, preferred_game[0])
+            sleep(0.03)
+    else:
+        while True:
+            now = time()
 
-        if now - last_fetch > 30:
-            new_games = get_all_scores()
+            if now - last_fetch > 30:
+                new_games = get_all_scores()
 
-            # update prev_scores
-            for game in new_games:
-                gid = game["id"]
-                try:
-                    prev_scores[gid] = (
-                        int(game["away_score"]),
-                        int(game["home_score"]),
-                    )
-                except ValueError:
-                    pass
+                # update prev_scores
+                for game in new_games:
+                    gid = game["id"]
+                    try:
+                        prev_scores[gid] = (
+                            int(game["away_score"]),
+                            int(game["home_score"]),
+                        )
+                    except ValueError:
+                        pass
 
-            games = new_games
-            last_fetch = now
-            if not games:
-                current_page = 0
+                games = new_games
+                last_fetch = now
+                if not games:
+                    current_page = 0
 
-        if games and now - last_switch > page_display_time:
-            current_page = (current_page + 4) % max(len(games), 1)
-            last_switch = now
+            if games and now - last_switch > page_display_time:
+                current_page = (current_page + 4) % max(len(games), 1)
+                last_switch = now
 
-        canvas.Clear()
+            canvas.Clear()
 
-        if games:
-            draw_all_games(canvas, games, current_page)
-        else:
-            graphics.DrawText(
-                canvas, font, 10, 22, graphics.Color(Colors.RED), "No games today"
-            )
+            if games:
+                draw_all_games(canvas, games, current_page)
+            else:
+                graphics.DrawText(
+                    canvas, font, 10, 22, graphics.Color(Colors.RED), "No games today"
+                )
 
-        canvas = matrix.SwapOnVSync(canvas)
-        sleep(0.03)
+            canvas = matrix.SwapOnVSync(canvas)
+            sleep(0.03)
 
 
 if __name__ == "__main__":
