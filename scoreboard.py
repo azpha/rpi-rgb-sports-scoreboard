@@ -408,7 +408,7 @@ def run():
         if games:
             draw_all_games(canvas, games, current_page)
         else:
-            graphics.DrawText(canvas, font, 10, 22, graphics.Color(Colors.RED), "No games today")
+            graphics.DrawText(canvas, font, 10, 22, graphics.Color(255,0,0), "No games today")
 
         canvas = matrix.SwapOnVSync(canvas)
         sleep(0.03)
