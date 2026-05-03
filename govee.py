@@ -48,6 +48,17 @@ class GoveeApi:
         await self.close()
 
     async def send_scene(self, scene_code: str):
+        power_payload = {
+            "msg": {
+                "cmd": "turn",
+                "data": {
+                    "value": 1  # 1 = on, 0 = off
+                }
+            }
+        }
+        self._send(power_payload)
+        time.sleep(0.5)
+
         segments = scene_code.split(",")
         for i, segment in enumerate(segments):
             payload = {"msg": {"cmd": "ptReal", "data": {"command": [segment]}}}
