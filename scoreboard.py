@@ -384,7 +384,7 @@ def run():
                     preferred_game_ids.append(game['id'])
                     break
 
-            if preferred_game_on:
+            if not preferred_game_on:
                 for preferred_game in preferred_game_ids:
                     shown_game = [g for g in games if preferred_game == g['id']]
                     print(shown_game)
