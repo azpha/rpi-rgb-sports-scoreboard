@@ -395,7 +395,7 @@ def run():
                     sleep(10)
             else:
                 current_page = (current_page + 4) % max(len(games), 1)
-                draw_all_games(canvas, games)
+                draw_all_games(canvas, games, current_page)
                 canvas = matrix.SwapOnVSync(canvas)
                 sleep(0.03)
         else:
