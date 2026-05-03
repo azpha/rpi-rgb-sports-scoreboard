@@ -1,6 +1,7 @@
 import time
 import requests
 import os
+import govee
 from PIL import Image, ImageDraw, ImageFont
 from rgbmatrix import RGBMatrix, RGBMatrixOptions, graphics
 
@@ -40,13 +41,18 @@ sabres_gold = graphics.Color(252, 20, 210)
 
 LOGO_DIR = "/usr/local/share/logos"
 SABRES_ABBR = "BUF"
+GOVEE_DEVICE = "3D:22:D7:94:40:46:2F:72"
+GOVEE_SKU = "H6168"
+GOVEE_AWS = "owABAgT/AGQMACr//+YAADb//8k=,o//QAAIDAwAAAAAAAAAAAAAAAI4=,MwUKdwAAAAAAAAAAAAAAAAAAAEs="
+GOVEE_IP = "172.16.0.15"
 
 # --- Logo cache ---
 logo_cache = {}
 
-def render_goal_frame(text, text_scale, bg_color, text_color):
-    img = Image.new("RGB", (256, 32), bg_color)
+# --- Govee API ---
+govee_api = govee.GoveeApi(device_ip=GOVEE_IP)
 
+def render_goal_frame(text, text_scale, bg_color, text_color):
     big_h = max(8, int(32 * text_scale))
     big_img = Image.new("RGB", (1024, 128), bg_color)
     big_draw = ImageDraw.Draw(big_img)
@@ -113,6 +119,7 @@ def play_goal_celebration():
     GOLD = (252, 20, 210) # was (252, 210, 20)
     WHITE = (255, 255, 255) # unchanged
     TEXT = "SABRES GOAL!"
+    govee_api.send_scene(GOVEE_AWS)
 
     # Phase 1: zoom in from tiny to full, alternating bg color
     zoom_steps = [0.1, 0.2, 0.35, 0.5, 0.65, 0.8, 0.95, 1.1, 1.0]
@@ -159,6 +166,7 @@ def play_goal_celebration():
 
     # Hold for a moment then return to scoreboard
     time.sleep(0.5)
+    govee_api.set_to_original_color()
 
 def load_logo(league, abbr):
     key = f"{league}_{abbr}"
