@@ -2,6 +2,7 @@ import time
 import requests
 import os
 import govee
+import pygame
 from time import sleep
 from PIL import Image, ImageDraw, ImageFont
 from rgbmatrix import RGBMatrix, RGBMatrixOptions, graphics
@@ -50,6 +51,13 @@ logo_cache = {}
 
 # --- Govee API ---
 govee_api = govee.GoveeApi(key="")
+
+# --- PyGame Audio ---
+pygame.mixer.init()
+
+def play_goal_horn():
+    pygame.mixer.music.load("/usr/local/share/horn.mp3")
+    pygame.mixer.music.play()
 
 def render_goal_frame(text, text_scale, bg_color, text_color):
     big_h = max(8, int(32 * text_scale))
@@ -289,6 +297,7 @@ def run():
     last_switch = time.time()
 
     while True:
+        play_goal_horn()
         govee_api.set_diy_scene(GOVEE_SKU, GOVEE_DEVICE)
         play_goal_celebration()
         govee_api.set_to_original_color(GOVEE_SKU, GOVEE_DEVICE)
