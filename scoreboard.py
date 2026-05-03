@@ -355,8 +355,8 @@ def draw_single_game(canvas, game):
     graphics.DrawText(
         canvas,
         font,
-        35,
-        35,
+        45,
+        10,
         graphics.Color(255,255,255),
         str(game["status"])
     )
