@@ -2,6 +2,7 @@ import time
 import requests
 import os
 import govee
+import pygame
 from time import sleep
 from PIL import Image, ImageDraw, ImageFont
 from rgbmatrix import RGBMatrix, RGBMatrixOptions, graphics
@@ -52,6 +53,16 @@ logo_cache = {}
 
 # --- Govee API ---
 govee_api = govee.GoveeApi(device_ip=GOVEE_IP)
+
+# -- PyGame for Audio --
+pygame.mixer.init()
+
+def play_goal_horn():
+    try:
+        pygame.mixer.music.load("/usr/local/share/horn.mp3")
+        pygame.mixer.music.play()
+    except Exception as e:
+        print(f"Audio error: {e}")
 
 def render_goal_frame(text, text_scale, bg_color, text_color):
     big_h = max(8, int(32 * text_scale))
@@ -120,6 +131,8 @@ def play_goal_celebration():
     GOLD = (252, 20, 210) # was (252, 210, 20)
     WHITE = (255, 255, 255) # unchanged
     TEXT = "SABRES GOAL!"
+
+    play_goal_horn()
 
     # Phase 1: zoom in from tiny to full, alternating bg color
     zoom_steps = [0.1, 0.2, 0.35, 0.5, 0.65, 0.8, 0.95, 1.1, 1.0]
