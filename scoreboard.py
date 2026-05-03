@@ -278,7 +278,7 @@ def run():
 
     while True:
         govee_api.set_diy_scene(os.environ['GOVEE_SKU'], os.environ['GOVEE_DEVICE'])
-        play_goal_celebration("SABRES GOAL!", Colors.SABRES_BLUE, Colors.SABRES_GOLD)
+        play_goal_celebration("SABRES GOAL!", Colors.SABRES_BLUE.value, Colors.SABRES_GOLD.value)
         govee_api.set_to_original_color(os.environ['GOVEE_SKU'], os.environ['GOVEE_DEVICE'])
 
     # while True:
