@@ -51,14 +51,6 @@ class GoveeApi:
     sock.settimeout(1)
     data = json.dumps(payload).encode()
     
-    for attempt in range(retries):
-        sock.sendto(data, (self.device_ip, 4003))
-        try:
-            response, _ = sock.recvfrom(1024)
-            print(f"Got response on attempt {attempt + 1}")
-            break  # stop retrying once we get an ack
-        except socket.timeout:
-            if attempt < retries - 1:
-                time.sleep(delay)
+    sock.sendto(data, (self.device_ip, 4003))
     
     sock.close()
