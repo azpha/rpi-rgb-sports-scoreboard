@@ -393,7 +393,7 @@ def run():
                     canvas = matrix.SwapOnVSync(canvas)
                     sleep(10)
             else:
-                draw_all_games()
+                draw_all_games(canvas, games)
                 canvas = matrix.SwapOnVSync(canvas)
                 sleep(0.03)
         else:
