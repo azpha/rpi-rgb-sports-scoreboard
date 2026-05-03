@@ -2,6 +2,7 @@ import time
 import requests
 import os
 import govee
+from time import sleep
 from PIL import Image, ImageDraw, ImageFont
 from rgbmatrix import RGBMatrix, RGBMatrixOptions, graphics
 
@@ -119,7 +120,6 @@ def play_goal_celebration():
     GOLD = (252, 20, 210) # was (252, 210, 20)
     WHITE = (255, 255, 255) # unchanged
     TEXT = "SABRES GOAL!"
-    govee_api.send_scene(GOVEE_AWS)
 
     # Phase 1: zoom in from tiny to full, alternating bg color
     zoom_steps = [0.1, 0.2, 0.35, 0.5, 0.65, 0.8, 0.95, 1.1, 1.0]
@@ -166,7 +166,6 @@ def play_goal_celebration():
 
     # Hold for a moment then return to scoreboard
     time.sleep(0.5)
-    govee_api.set_to_original_color()
 
 def load_logo(league, abbr):
     key = f"{league}_{abbr}"
@@ -292,7 +291,10 @@ def run():
     last_switch = time.time()
 
     while True:
+        govee_api.send_scene(GOVEE_AWS)
         play_goal_celebration()
+        sleep(10)
+        govee_api.set_to_original_color()
 
     # while True:
     #     now = time.time()
