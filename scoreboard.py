@@ -44,14 +44,12 @@ LOGO_DIR = "/usr/local/share/logos"
 SABRES_ABBR = "BUF"
 GOVEE_DEVICE = "3D:22:D7:94:40:46:2F:72"
 GOVEE_SKU = "H6168"
-GOVEE_AWS = "owABAgT/AGQMACr//+YAADb//8k=,o//QAAIDAwAAAAAAAAAAAAAAAI4=,MwUKdwAAAAAAAAAAAAAAAAAAAEs="
-GOVEE_IP = "172.16.0.15"
 
 # --- Logo cache ---
 logo_cache = {}
 
 # --- Govee API ---
-govee_api = govee.GoveeApi(device_ip=GOVEE_IP)
+govee_api = govee.GoveeApi(key="")
 
 def render_goal_frame(text, text_scale, bg_color, text_color):
     big_h = max(8, int(32 * text_scale))
@@ -293,7 +291,6 @@ def run():
     while True:
         play_goal_celebration()
         govee_api.send_scene(GOVEE_AWS)
-        govee_api.set_to_original_color()
 
     # while True:
     #     now = time.time()
