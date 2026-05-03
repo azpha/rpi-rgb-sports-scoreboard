@@ -269,6 +269,7 @@ def draw_all_games(canvas, games, start_index):
 # --- Main loop ---
 def run():
     global canvas
+    preferred_game_on = False
     games = []
     prev_scores = {}
     last_fetch = 0
@@ -276,12 +277,12 @@ def run():
     page_display_time = 8
     last_switch = time()
 
-    while True:
-        govee_api.set_diy_scene(os.environ['GOVEE_SKU'], os.environ['GOVEE_DEVICE'])
-        play_goal_celebration("SABRES GOAL!", Colors.SABRES_BLUE.value, Colors.SABRES_GOLD.value)
-        govee_api.set_to_original_color(os.environ['GOVEE_SKU'], os.environ['GOVEE_DEVICE'])
+    current_games = get_all_scores()
+    for game in current_games:
+        print(game.status, game.home, game.away)
 
-    # while True:
+    while True:
+
     #     now = time()
 
     #     if now - last_fetch > 30:
@@ -289,7 +290,6 @@ def run():
 
     #         # update prev_scores
     #         for game in new_games:
-    #             gid = game["id"]
     #             try:
     #                 prev_scores[gid] = (int(game["away_score"]), int(game["home_score"]))
     #             except ValueError:
@@ -304,7 +304,6 @@ def run():
     #         current_page = (current_page + 4) % max(len(games), 1)
     #         last_switch = now
 
-    #     canvas.Clear()
 
     #     if games:
     #         draw_all_games(canvas, games, current_page)
@@ -313,6 +312,17 @@ def run():
 
     #     canvas = matrix.SwapOnVSync(canvas)
     #     sleep(0.03)
+        now = time()
+                gid = game["id"]
+                except ValueError:
+            current_page = (current_page + 4) % max(len(games), 1)
+        if games:
+            draw_all_games(canvas, games, current_page)
+        else:
+            graphics.DrawText(canvas, font, 10, 22, graphics.Color(Colors.RED), "No games today")
+
+        canvas = matrix.SwapOnVSync(canvas)
+        sleep(0.03)
 
 if __name__ == "__main__":
     run()
