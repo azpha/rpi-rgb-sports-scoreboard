@@ -366,7 +366,7 @@ def draw_single_game(canvas, game):
 def run():
     global canvas
     preferred_game_on = False
-    games = []
+    preferred_game_ids = []
 
     preferred_team = [
         "BUF",
@@ -380,21 +380,28 @@ def run():
         if games:
             for game in games:
                 if game['away'] in preferred_team or game['home'] in preferred_team:
-                    preferred_game_on = game
-                    print(game)
+                    preferred_game_on = True
+                    preferred_game_ids.append(game['id'])
                     break
-            
+
             if preferred_game_on:
-                draw_single_game(canvas, preferred_game_on)
+                for preferred_game in preferred_game_ids:
+                    shown_game = [g for g in games if preferred_game == g['id']]
+                    print(shown_game)
+
+                    draw_single_game(canvas, shown_game[0])
+                    canvas = matrix.SwapOnVSync(canvas)
+                    sleep(10)
             else:
-                draw_all_games(games)
+                draw_all_games()
+                canvas = matrix.SwapOnVSync(canvas)
+                sleep(0.03)
         else:
             graphics.DrawText(
                 canvas, font, 10, 22, graphics.Color(Colors.RED), "No games today"
             )
-
-        canvas = matrix.SwapOnVSync(canvas)
-        sleep(10)
+            canvas = matrix.SwapOnVSync(canvas)
+            sleep(0.03)
 
 
 if __name__ == "__main__":
