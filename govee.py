@@ -1,4 +1,4 @@
-import requests
+import time
 import json
 import socket
 
@@ -35,7 +35,19 @@ class GoveeApi:
     }
     self.send_over_socket(payload)
   
-  def send_over_socket(self, payload):
+  def send_over_socket(self, payload, retries=2, delay=0.1):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.sendto(json.dumps(payload).encode(), (self.device_ip, 4003))
+    sock.settimeout(1)
+    data = json.dumps(payload).encode()
+    
+    for attempt in range(retries):
+        sock.sendto(data, (self.device_ip, 4003))
+        try:
+            response, _ = sock.recvfrom(1024)
+            print(f"Got response on attempt {attempt + 1}")
+            break  # stop retrying once we get an ack
+        except socket.timeout:
+            if attempt < retries - 1:
+                time.sleep(delay)
+    
     sock.close()
