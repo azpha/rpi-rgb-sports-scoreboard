@@ -35,8 +35,8 @@ white      = graphics.Color(255, 255, 255)
 yellow     = graphics.Color(255, 200, 0)
 red        = graphics.Color(255, 50, 50)
 grey       = graphics.Color(180, 180, 180)
-sabres_blue = graphics.Color(0, 48, 135)
-sabres_gold = graphics.Color(252, 181, 20)
+sabres_blue = graphics.Color(0, 135, 48)
+sabres_gold = graphics.Color(252, 20, 210)
 
 LOGO_DIR = "/home/alex/logos"
 SABRES_ABBR = "BUF"
@@ -83,9 +83,9 @@ def draw_pil_image(canvas, img):
 def play_goal_celebration():
     global canvas
 
-    BLUE = (0, 48, 135)
-    GOLD = (252, 210, 0)
-    WHITE = (255, 255, 255)
+    BLUE = (0, 135, 48)   # was (0, 48, 135)
+    GOLD = (252, 20, 210) # was (252, 210, 20)
+    WHITE = (255, 255, 255) # unchanged
     TEXT = "SABRES GOAL!"
 
     # Phase 1: zoom in from tiny to full, alternating bg color
@@ -160,7 +160,7 @@ def draw_logo(canvas, img, x, y):
     for px in range(img.width):
         for py in range(img.height):
             r, g, b = img.getpixel((px, py))
-            canvas.SetPixel(x + px, y + py, r, g, b)
+            canvas.SetPixel(x + px, y + py, r, b, g)  # RBG order
 
 # --- Fetch scores ---
 def get_scores(sport, league):
