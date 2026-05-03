@@ -381,6 +381,8 @@ def run():
             for game in games:
                 if game['away'] in preferred_team or game['home'] in preferred_team:
                     preferred_game_on = game
+                    print(game)
+                    break
             
             if preferred_game_on:
                 draw_single_game(canvas, preferred_game_on)
