@@ -86,13 +86,14 @@ def play_goal_celebration():
     BLUE = (0, 48, 135)
     GOLD = (252, 181, 20)
     WHITE = (255, 255, 255)
+    TEXT = "SABRES GOAL!"
 
     # Phase 1: zoom in from tiny to full, alternating bg color
     zoom_steps = [0.1, 0.2, 0.35, 0.5, 0.65, 0.8, 0.95, 1.1, 1.0]
     for i, scale in enumerate(zoom_steps):
         bg = BLUE if i % 2 == 0 else GOLD
         fg = GOLD if i % 2 == 0 else BLUE
-        frame = render_goal_frame("GOAL!", scale, bg, fg)
+        frame = render_goal_frame(TEXT, scale, bg, fg)
         canvas.Clear()
         draw_pil_image(canvas, frame)
         canvas = matrix.SwapOnVSync(canvas)
@@ -102,7 +103,7 @@ def play_goal_celebration():
     for i in range(10):
         bg = BLUE if i % 2 == 0 else GOLD
         fg = GOLD if i % 2 == 0 else BLUE
-        frame = render_goal_frame("GOAL!", 1.0, bg, fg)
+        frame = render_goal_frame(TEXT, 1.0, bg, fg)
         canvas.Clear()
         draw_pil_image(canvas, frame)
         canvas = matrix.SwapOnVSync(canvas)
@@ -113,7 +114,7 @@ def play_goal_celebration():
     for i, scale in enumerate(zoom_out):
         bg = GOLD if i % 2 == 0 else BLUE
         fg = BLUE if i % 2 == 0 else GOLD
-        frame = render_goal_frame("GOAL!", scale, bg, fg)
+        frame = render_goal_frame(TEXT, scale, bg, fg)
         canvas.Clear()
         draw_pil_image(canvas, frame)
         canvas = matrix.SwapOnVSync(canvas)
@@ -122,7 +123,7 @@ def play_goal_celebration():
     # Phase 4: white flash to end
     for _ in range(3):
         canvas.Clear()
-        frame = render_goal_frame("GOAL!", 1.0, WHITE, BLUE)
+        frame = render_goal_frame(TEXT, 1.0, WHITE, BLUE)
         draw_pil_image(canvas, frame)
         canvas = matrix.SwapOnVSync(canvas)
         time.sleep(0.1)
