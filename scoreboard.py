@@ -1,7 +1,7 @@
 import time
 import requests
 import os
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 from rgbmatrix import RGBMatrix, RGBMatrixOptions, graphics
 
 # --- Matrix config ---
@@ -43,6 +43,95 @@ SABRES_ABBR = "BUF"
 
 # --- Logo cache ---
 logo_cache = {}
+
+def render_goal_frame(text, text_scale, bg_color, text_color, alpha=255):
+    """Render a GOAL! frame using PIL at a given scale, returns RGB image."""
+    img = Image.new("RGB", (256, 32), bg_color)
+    draw = ImageDraw.Draw(img)
+
+    # Use PIL's default font scaled up via a temporary large image then downscale
+    big_h = max(8, int(32 * text_scale))
+    big_img = Image.new("RGB", (1024, big_h * 2), bg_color)
+    big_draw = ImageDraw.Draw(big_img)
+
+    # Draw text large then scale down for the zoom effect
+    try:
+        pil_font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", big_h)
+    except:
+        pil_font = ImageFont.load_default()
+
+    # Measure text
+    bbox = big_draw.textbbox((0, 0), text, font=pil_font)
+    tw = bbox[2] - bbox[0]
+    th = bbox[3] - bbox[1]
+
+    # Center it
+    tx = (1024 - tw) // 2
+    ty = (big_h * 2 - th) // 2
+    big_draw.text((tx, ty), text, font=pil_font, fill=text_color)
+
+    # Scale down to 256x32
+    scaled = big_img.resize((256, 32), Image.LANCZOS)
+    return scaled
+
+def draw_pil_image(canvas, img):
+    for x in range(img.width):
+        for y in range(img.height):
+            r, g, b = img.getpixel((x, y))
+            canvas.SetPixel(x, y, r, g, b)
+
+def play_goal_celebration():
+    global canvas
+
+    BLUE = (0, 48, 135)
+    GOLD = (252, 181, 20)
+    WHITE = (255, 255, 255)
+
+    # Phase 1: zoom in from tiny to full, alternating bg color
+    zoom_steps = [0.1, 0.2, 0.35, 0.5, 0.65, 0.8, 0.95, 1.1, 1.0]
+    for i, scale in enumerate(zoom_steps):
+        bg = BLUE if i % 2 == 0 else GOLD
+        fg = GOLD if i % 2 == 0 else BLUE
+        frame = render_goal_frame("GOAL!", scale, bg, fg)
+        canvas.Clear()
+        draw_pil_image(canvas, frame)
+        canvas = matrix.SwapOnVSync(canvas)
+        time.sleep(0.05)
+
+    # Phase 2: rapid flashing at full size
+    for i in range(10):
+        bg = BLUE if i % 2 == 0 else GOLD
+        fg = GOLD if i % 2 == 0 else BLUE
+        frame = render_goal_frame("GOAL!", 1.0, bg, fg)
+        canvas.Clear()
+        draw_pil_image(canvas, frame)
+        canvas = matrix.SwapOnVSync(canvas)
+        time.sleep(0.12)
+
+    # Phase 3: zoom back out and fade to white flash
+    zoom_out = [1.0, 1.1, 1.2, 1.3, 1.4]
+    for i, scale in enumerate(zoom_out):
+        bg = GOLD if i % 2 == 0 else BLUE
+        fg = BLUE if i % 2 == 0 else GOLD
+        frame = render_goal_frame("GOAL!", scale, bg, fg)
+        canvas.Clear()
+        draw_pil_image(canvas, frame)
+        canvas = matrix.SwapOnVSync(canvas)
+        time.sleep(0.08)
+
+    # Phase 4: white flash to end
+    for _ in range(3):
+        canvas.Clear()
+        frame = render_goal_frame("GOAL!", 1.0, WHITE, BLUE)
+        draw_pil_image(canvas, frame)
+        canvas = matrix.SwapOnVSync(canvas)
+        time.sleep(0.1)
+        canvas.Clear()
+        canvas = matrix.SwapOnVSync(canvas)
+        time.sleep(0.08)
+
+    # Hold for a moment then return to scoreboard
+    time.sleep(0.5)
 
 def load_logo(league, abbr):
     key = f"{league}_{abbr}"
@@ -132,36 +221,6 @@ def fill_background(canvas, color):
     for x in range(256):
         for y in range(32):
             canvas.SetPixel(x, y, *color)
-
-def play_goal_celebration():
-    global canvas
-    colors = [
-        (0, 48, 135),    # sabres blue
-        (252, 181, 20),  # sabres gold
-    ]
-
-    flashes = 6
-    for i in range(flashes):
-        bg = colors[i % 2]
-        text_color = sabres_gold if i % 2 == 0 else sabres_blue
-
-        canvas.Clear()
-        # fill background
-        for x in range(256):
-            for y in range(32):
-                canvas.SetPixel(x, y, bg[0], bg[1], bg[2])
-
-        # draw GOAL! centered across full 256px width
-        text = "GOAL!"
-        # draw it twice across the display for that arena feel
-        graphics.DrawText(canvas, font_big, 20, 22, text_color, text)
-        graphics.DrawText(canvas, font_big, 140, 22, text_color, text)
-
-        canvas = matrix.SwapOnVSync(canvas)
-        time.sleep(0.3)
-
-    # hold final frame briefly
-    time.sleep(1.0)
 
 # --- Draw all games across all panels ---
 def draw_all_games(canvas, games, start_index):
