@@ -392,18 +392,20 @@ def run():
 
                     draw_single_game(canvas, shown_game[0])
                     canvas = matrix.SwapOnVSync(canvas)
-                    sleep(10)
             else:
                 current_page = (current_page + 4) % max(len(games), 1)
                 draw_all_games(canvas, games, current_page)
                 canvas = matrix.SwapOnVSync(canvas)
-                sleep(0.03)
         else:
             graphics.DrawText(
                 canvas, font, 10, 22, graphics.Color(Colors.RED), "No games today"
             )
             canvas = matrix.SwapOnVSync(canvas)
-            sleep(0.03)
+
+        sleep(10)
+        canvas.Clear()
+        canvas = matrix.SwapOnVSync(canvas)
+
 
 
 if __name__ == "__main__":
