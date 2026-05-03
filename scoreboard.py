@@ -293,7 +293,7 @@ def run():
     while True:
         govee_api.send_scene(GOVEE_AWS)
         play_goal_celebration()
-        govee_api.set_to_original_color()
+        # govee_api.set_to_original_color()
 
     # while True:
     #     now = time.time()
