@@ -159,7 +159,7 @@ def play_goal_celebration(text, color1, color2):
             sleep(0.1)
 
     # clear board
-    canvas = canvas.clear()
+    canvas = canvas.Clear()
     canvas = matrix.SwapOnVSync(canvas)
 
     # stop music if playing
