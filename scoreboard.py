@@ -277,37 +277,42 @@ def run():
     last_switch = time()
 
     while True:
-        now = time()
+        govee_api.set_diy_scene(os.environ['GOVEE_SKU'], os.environ['GOVEE_DEVICE'])
+        play_goal_celebration()
+        govee_api.set_to_original_color(os.environ['GOVEE_SKU'], os.environ['GOVEE_DEVICE'])
 
-        if now - last_fetch > 30:
-            new_games = get_all_scores()
+    # while True:
+    #     now = time()
 
-            # update prev_scores
-            for game in new_games:
-                gid = game["id"]
-                try:
-                    prev_scores[gid] = (int(game["away_score"]), int(game["home_score"]))
-                except ValueError:
-                    pass
+    #     if now - last_fetch > 30:
+    #         new_games = get_all_scores()
 
-            games = new_games
-            last_fetch = now
-            if not games:
-                current_page = 0
+    #         # update prev_scores
+    #         for game in new_games:
+    #             gid = game["id"]
+    #             try:
+    #                 prev_scores[gid] = (int(game["away_score"]), int(game["home_score"]))
+    #             except ValueError:
+    #                 pass
 
-        if games and now - last_switch > page_display_time:
-            current_page = (current_page + 4) % max(len(games), 1)
-            last_switch = now
+    #         games = new_games
+    #         last_fetch = now
+    #         if not games:
+    #             current_page = 0
 
-        canvas.Clear()
+    #     if games and now - last_switch > page_display_time:
+    #         current_page = (current_page + 4) % max(len(games), 1)
+    #         last_switch = now
 
-        if games:
-            draw_all_games(canvas, games, current_page)
-        else:
-            graphics.DrawText(canvas, font, 10, 22, graphics.Color(Colors.RED), "No games today")
+    #     canvas.Clear()
 
-        canvas = matrix.SwapOnVSync(canvas)
-        sleep(0.03)
+    #     if games:
+    #         draw_all_games(canvas, games, current_page)
+    #     else:
+    #         graphics.DrawText(canvas, font, 10, 22, graphics.Color(Colors.RED), "No games today")
+
+    #     canvas = matrix.SwapOnVSync(canvas)
+    #     sleep(0.03)
 
 if __name__ == "__main__":
     run()
