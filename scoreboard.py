@@ -372,10 +372,6 @@ def run():
     page_display_time = 8
     last_switch = time()
 
-    current_games = get_all_scores()
-    for game in current_games:
-        print(game.status, game.home, game.away)
-
     while True:
 
     #     now = time()
