@@ -7,12 +7,13 @@ LEAGUES = [
     ("hockey", "nhl"),
     ("football", "nfl"),
     ("basketball", "nba"),
-    ("baseball", "mlb")
+    ("baseball", "mlb"),
 ]
 
 LOGO_SIZE = (16, 16)
 
 os.makedirs("./assets/logos", exist_ok=True)
+
 
 def download_logos(sport, league):
     url = f"https://site.api.espn.com/apis/site/v2/sports/{sport}/{league}/teams"
@@ -48,6 +49,7 @@ def download_logos(sport, league):
             print(f"Saved {out_path}")
         except Exception as e:
             print(f"Error downloading {abbr}: {e}")
+
 
 for sport, league in LEAGUES:
     print(f"\nDownloading {league.upper()} logos...")

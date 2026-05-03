@@ -13,7 +13,7 @@ load_dotenv()
 
 # --- Default vars ---
 ASSET_DIR = "./assets"
-LOGO_DIR = os.path.join(ASSET_DIR, 'logos')
+LOGO_DIR = os.path.join(ASSET_DIR, "logos")
 
 # --- Matrix config ---
 options = RGBMatrixOptions()
@@ -21,7 +21,7 @@ options.rows = 32
 options.cols = 64
 options.chain_length = 4
 options.parallel = 1
-options.hardware_mapping = 'regular'
+options.hardware_mapping = "regular"
 options.gpio_slowdown = 5
 options.disable_hardware_pulsing = True
 options.brightness = 80
@@ -33,17 +33,18 @@ canvas = matrix.CreateFrameCanvas()
 font = graphics.Font()
 font_small = graphics.Font()
 font_big = graphics.Font()
-font.LoadFont(os.path.join(ASSET_DIR, 'fonts/7x13.bdf'))
-font_small.LoadFont(os.path.join(ASSET_DIR, 'fonts/5x7.bdf'))
+font.LoadFont(os.path.join(ASSET_DIR, "fonts/7x13.bdf"))
+font_small.LoadFont(os.path.join(ASSET_DIR, "fonts/5x7.bdf"))
 
 # try to load a big font for GOAL!, fall back to regular if not available
 try:
-    font_big.LoadFont(os.path.join(ASSET_DIR, 'fonts/9x18.bdf'))
+    font_big.LoadFont(os.path.join(ASSET_DIR, "fonts/9x18.bdf"))
 except:
     font_big = font
 
 # --- Logo cache ---
 logo_cache = {}
+
 
 # --- Pre-built colors ---
 class Colors(Enum):
@@ -53,11 +54,13 @@ class Colors(Enum):
     SABRES_BLUE = (0, 135, 48)
     SABRES_GOLD = (252, 20, 210)
 
+
 # --- Govee API ---
-govee_api = govee.GoveeApi(key=os.environ['GOVEE_API_KEY'])
+govee_api = govee.GoveeApi(key=os.environ["GOVEE_API_KEY"])
 
 # --- PyGame Audio ---
 pygame.mixer.init()
+
 
 # --- Goal celebrations ---
 def render_goal_frame(text, text_scale, bg_color, text_color):
@@ -67,7 +70,9 @@ def render_goal_frame(text, text_scale, bg_color, text_color):
 
     # rpi specific, fall back to default font if not existing
     try:
-        pil_font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", big_h)
+        pil_font = ImageFont.truetype(
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", big_h
+        )
     except:
         pil_font = ImageFont.load_default()
 
@@ -114,6 +119,7 @@ def render_goal_frame(text, text_scale, bg_color, text_color):
 
     return scaled
 
+
 def play_goal_celebration(text, color1, color2):
     global canvas
 
@@ -153,7 +159,9 @@ def play_goal_celebration(text, color1, color2):
         # Phase 4: white flash to end
         for _ in range(3):
             canvas.Clear()
-            frame = render_goal_frame(text, 1.0, Colors.SABRES_GOLD.value, Colors.SABRES_BLUE.value)
+            frame = render_goal_frame(
+                text, 1.0, Colors.SABRES_GOLD.value, Colors.SABRES_BLUE.value
+            )
             draw_pil_image(canvas, frame)
             canvas = matrix.SwapOnVSync(canvas)
             sleep(0.1)
@@ -168,16 +176,19 @@ def play_goal_celebration(text, color1, color2):
     # Hold for a moment then return to scoreboard
     sleep(0.5)
 
+
 def play_audio(filename):
     pygame.mixer.music.load(os.path.join(ASSET_DIR, filename))
     pygame.mixer.music.play()
+
 
 # --- Utilities ---
 def draw_pil_image(canvas, img):
     for x in range(img.width):
         for y in range(img.height):
             r, g, b = img.getpixel((x, y))
-            canvas.SetPixel(x, y, b, g, r) # bgr panels 
+            canvas.SetPixel(x, y, b, g, r)  # bgr panels
+
 
 def load_logo(league, abbr):
     key = f"{league}_{abbr}"
@@ -199,6 +210,7 @@ def load_logo(league, abbr):
         logo_cache[key] = None
         return None
 
+
 def draw_logo(canvas, img, x, y):
     if img is None:
         return
@@ -206,6 +218,7 @@ def draw_logo(canvas, img, x, y):
         for py in range(img.height):
             r, g, b = img.getpixel((px, py))
             canvas.SetPixel(x + px, y + py, r, g, b)  # bgr panels
+
 
 # --- Fetch scores ---
 def get_scores(sport, league):
@@ -220,19 +233,22 @@ def get_scores(sport, league):
             home = next(t for t in teams if t["homeAway"] == "home")
             away = next(t for t in teams if t["homeAway"] == "away")
             status = event["status"]["type"]["shortDetail"]
-            games.append({
-                "league": league,
-                "away": away["team"]["abbreviation"].upper(),
-                "away_score": away["score"],
-                "home": home["team"]["abbreviation"].upper(),
-                "home_score": home["score"],
-                "status": status,
-                "id": event["id"],
-            })
+            games.append(
+                {
+                    "league": league,
+                    "away": away["team"]["abbreviation"].upper(),
+                    "away_score": away["score"],
+                    "home": home["team"]["abbreviation"].upper(),
+                    "home_score": home["score"],
+                    "status": status,
+                    "id": event["id"],
+                }
+            )
         return games
     except Exception as e:
         print(f"Fetch error ({league}): {e}")
         return []
+
 
 def get_all_scores():
     games = []
@@ -241,6 +257,7 @@ def get_all_scores():
     games += get_scores("basketball", "nba")
     games += get_scores("baseball", "mlb")
     return games
+
 
 # --- Draw all games across all panels ---
 def draw_all_games(canvas, games, start_index):
@@ -256,15 +273,44 @@ def draw_all_games(canvas, games, start_index):
         draw_logo(canvas, away_logo, offset + 0, 0)
         draw_logo(canvas, home_logo, offset + 0, 16)
 
-        graphics.DrawText(canvas, font_small, offset + 18, 11, graphics.Color(255,255,255), game["away"])
-        graphics.DrawText(canvas, font_small, offset + 18, 27, graphics.Color(255,255,255), game["home"])
+        graphics.DrawText(
+            canvas,
+            font_small,
+            offset + 18,
+            11,
+            graphics.Color(255, 255, 255),
+            game["away"],
+        )
+        graphics.DrawText(
+            canvas,
+            font_small,
+            offset + 18,
+            27,
+            graphics.Color(255, 255, 255),
+            game["home"],
+        )
 
-        graphics.DrawText(canvas, font, offset + 40, 13, graphics.Color(255,255,255), str(game["away_score"]))
-        graphics.DrawText(canvas, font, offset + 40, 29, graphics.Color(255,255,255), str(game["home_score"]))
+        graphics.DrawText(
+            canvas,
+            font,
+            offset + 40,
+            13,
+            graphics.Color(255, 255, 255),
+            str(game["away_score"]),
+        )
+        graphics.DrawText(
+            canvas,
+            font,
+            offset + 40,
+            29,
+            graphics.Color(255, 255, 255),
+            str(game["home_score"]),
+        )
 
         if i < 3:
             for row in range(32):
                 canvas.SetPixel(offset + 63, row, 40, 40, 40)
+
 
 # --- Main loop ---
 def run():
@@ -282,47 +328,43 @@ def run():
         print(game.status, game.home, game.away)
 
     while True:
-
-    #     now = time()
-
-    #     if now - last_fetch > 30:
-    #         new_games = get_all_scores()
-
-    #         # update prev_scores
-    #         for game in new_games:
-    #             try:
-    #                 prev_scores[gid] = (int(game["away_score"]), int(game["home_score"]))
-    #             except ValueError:
-    #                 pass
-
-    #         games = new_games
-    #         last_fetch = now
-    #         if not games:
-    #             current_page = 0
-
-    #     if games and now - last_switch > page_display_time:
-    #         current_page = (current_page + 4) % max(len(games), 1)
-    #         last_switch = now
-
-
-    #     if games:
-    #         draw_all_games(canvas, games, current_page)
-    #     else:
-    #         graphics.DrawText(canvas, font, 10, 22, graphics.Color(Colors.RED), "No games today")
-
-    #     canvas = matrix.SwapOnVSync(canvas)
-    #     sleep(0.03)
         now = time()
+
+        if now - last_fetch > 30:
+            new_games = get_all_scores()
+
+            # update prev_scores
+            for game in new_games:
                 gid = game["id"]
+                try:
+                    prev_scores[gid] = (
+                        int(game["away_score"]),
+                        int(game["home_score"]),
+                    )
                 except ValueError:
+                    pass
+
+            games = new_games
+            last_fetch = now
+            if not games:
+                current_page = 0
+
+        if games and now - last_switch > page_display_time:
             current_page = (current_page + 4) % max(len(games), 1)
+            last_switch = now
+
+        canvas.Clear()
+
         if games:
             draw_all_games(canvas, games, current_page)
         else:
-            graphics.DrawText(canvas, font, 10, 22, graphics.Color(Colors.RED), "No games today")
+            graphics.DrawText(
+                canvas, font, 10, 22, graphics.Color(Colors.RED), "No games today"
+            )
 
         canvas = matrix.SwapOnVSync(canvas)
         sleep(0.03)
+
 
 if __name__ == "__main__":
     run()
