@@ -61,6 +61,9 @@ def play_goal_horn():
     try:
         pygame.mixer.music.load("/usr/local/share/horn.mp3")
         pygame.mixer.music.play()
+
+        while pygame.mixer.music.get_busy():
+            pygame.time.Clock().tick(10)
     except Exception as e:
         print(f"Audio error: {e}")
 
