@@ -84,7 +84,7 @@ def play_goal_celebration():
     global canvas
 
     BLUE = (0, 48, 135)
-    GOLD = (252, 181, 20)
+    GOLD = (252, 210, 0)
     WHITE = (255, 255, 255)
     TEXT = "SABRES GOAL!"
 
