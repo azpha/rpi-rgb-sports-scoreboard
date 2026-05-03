@@ -166,9 +166,6 @@ def play_goal_celebration():
         draw_pil_image(canvas, frame)
         canvas = matrix.SwapOnVSync(canvas)
         time.sleep(0.1)
-        canvas.Clear()
-        canvas = matrix.SwapOnVSync(canvas)
-        time.sleep(0.08)
 
     # Hold for a moment then return to scoreboard
     time.sleep(0.5)
