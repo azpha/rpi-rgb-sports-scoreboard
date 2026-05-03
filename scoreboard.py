@@ -325,7 +325,7 @@ def run():
 
     current_games = get_all_scores()
     for game in current_games:
-        print(game.status, game.home, game.away)
+        print(game)
 
     while True:
         now = time()
