@@ -78,7 +78,7 @@ def draw_pil_image(canvas, img):
     for x in range(img.width):
         for y in range(img.height):
             r, g, b = img.getpixel((x, y))
-            canvas.SetPixel(x, y, g, r, b)  # swap r and g for GRB panels
+            canvas.SetPixel(x, y, b, g, r)  # swap r and g for GRB panels
 
 def play_goal_celebration():
     global canvas
