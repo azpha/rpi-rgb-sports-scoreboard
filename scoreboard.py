@@ -365,6 +365,7 @@ def draw_single_game(canvas, game):
 # --- Main loop ---
 def run():
     global canvas
+    current_page = 0
     preferred_game_on = False
     preferred_game_ids = []
 
@@ -393,6 +394,7 @@ def run():
                     canvas = matrix.SwapOnVSync(canvas)
                     sleep(10)
             else:
+                current_page = (current_page + 4) % max(len(games), 1)
                 draw_all_games(canvas, games)
                 canvas = matrix.SwapOnVSync(canvas)
                 sleep(0.03)
