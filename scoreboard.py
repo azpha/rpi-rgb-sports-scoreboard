@@ -293,7 +293,7 @@ async def run():
 
     while True:
         async with govee_api:
-            govee.send_scene(GOVEE_AWS)
+            govee_api.send_scene(GOVEE_AWS)
             play_goal_celebration()
             await govee_api.set_color(255,0,0)
 
