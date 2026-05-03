@@ -277,7 +277,7 @@ def run():
     last_switch = time()
 
     while True:
-        now = time.time()
+        now = time()
 
         if now - last_fetch > 30:
             new_games = get_all_scores()
