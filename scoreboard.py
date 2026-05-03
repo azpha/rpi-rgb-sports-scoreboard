@@ -44,34 +44,40 @@ SABRES_ABBR = "BUF"
 # --- Logo cache ---
 logo_cache = {}
 
-def render_goal_frame(text, text_scale, bg_color, text_color, alpha=255):
-    """Render a GOAL! frame using PIL at a given scale, returns RGB image."""
+def render_goal_frame(text, text_scale, bg_color, text_color):
     img = Image.new("RGB", (256, 32), bg_color)
-    draw = ImageDraw.Draw(img)
 
-    # Use PIL's default font scaled up via a temporary large image then downscale
     big_h = max(8, int(32 * text_scale))
-    big_img = Image.new("RGB", (1024, big_h * 2), bg_color)
+    big_img = Image.new("RGB", (1024, 128), bg_color)
     big_draw = ImageDraw.Draw(big_img)
 
-    # Draw text large then scale down for the zoom effect
     try:
         pil_font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", big_h)
     except:
         pil_font = ImageFont.load_default()
 
-    # Measure text
     bbox = big_draw.textbbox((0, 0), text, font=pil_font)
     tw = bbox[2] - bbox[0]
     th = bbox[3] - bbox[1]
 
-    # Center it
+    # center horizontally, anchor vertically to cap height not descenders
     tx = (1024 - tw) // 2
-    ty = (big_h * 2 - th) // 2
+    ty = (128 - th) // 2 - bbox[1]  # subtract bbox[1] to remove descender offset
     big_draw.text((tx, ty), text, font=pil_font, fill=text_color)
 
-    # Scale down to 256x32
     scaled = big_img.resize((256, 32), Image.LANCZOS)
+
+    # paste sabres logo on left and right if available
+    logo_path = os.path.join(LOGO_DIR, "nhl_BUF.png")
+    if os.path.exists(logo_path):
+        try:
+            logo = Image.open(logo_path).convert("RGB")
+            logo = logo.resize((28, 28), Image.LANCZOS)
+            scaled.paste(logo, (2, 2))
+            scaled.paste(logo, (226, 2))
+        except Exception as e:
+            print(f"Logo paste error: {e}")
+
     return scaled
 
 def draw_pil_image(canvas, img):
