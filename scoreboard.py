@@ -291,7 +291,7 @@ def run():
     while True:
         govee_api.set_diy_scene(GOVEE_DEVICE, GOVEE_SKU)
         play_goal_celebration()
-        govee_api.set_to_original_color()
+        govee_api.set_to_original_color(GOVEE_DEVICE, GOVEE_SKU)
 
     # while True:
     #     now = time.time()

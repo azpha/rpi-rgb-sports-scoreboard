@@ -52,6 +52,7 @@ class GoveeApi:
 
     req = requests.post(GOVEE_API_BASE_URL + 'device/control', headers=headers, json=payload)
     req.raise_for_status()
+    print(req.json())
 
   def set_to_original_color(self, sku, device):
     headers = {
