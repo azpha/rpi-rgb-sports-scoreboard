@@ -38,7 +38,7 @@ class GoveeApi:
 
   def set_diy_scene(self, sku, device):
     payload = {
-      'requestId': self.get_random_string(),
+      'requestId': self.__get_random_string(),
       'payload': {
         'sku': sku,
         'device': device,
@@ -59,7 +59,7 @@ class GoveeApi:
 
   def set_to_original_color(self, sku, device):
     payload = {
-      'requestId': self.get_random_string(),
+      'requestId': self.__get_random_string(),
       'payload': {
         'sku': sku,
         'device': device,
