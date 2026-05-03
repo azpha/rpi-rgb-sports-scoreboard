@@ -30,7 +30,7 @@ yellow = graphics.Color(255, 200, 0)
 red    = graphics.Color(255, 50, 50)
 grey   = graphics.Color(180, 180, 180)
 
-LOGO_DIR = "/home/alex/logos"
+LOGO_DIR = "/usr/local/share/logos"
 
 # --- Logo cache ---
 logo_cache = {}
