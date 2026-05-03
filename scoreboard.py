@@ -67,18 +67,26 @@ def render_goal_frame(text, text_scale, bg_color, text_color):
     scaled = big_img.resize((256, 32), Image.LANCZOS)
 
     # paste sabres logo on left and right
+    # Replace the logo paste section with this
     logo_path = os.path.join(LOGO_DIR, "nhl_BUF.png")
     if os.path.exists(logo_path):
         try:
-            # load as RGBA to preserve transparency
             logo = Image.open(logo_path).convert("RGBA")
             logo = logo.resize((28, 28), Image.LANCZOS)
 
-            # swap channels to fix RBG order: R stays, swap G and B
+            # swap G and B channels for RBG order
             r, g, b, a = logo.split()
             logo_rbg = Image.merge("RGBA", (r, b, g, a))
 
-            # paste with transparency mask onto background
+            # make near-black pixels transparent
+            pixels = logo_rbg.load()
+            for px in range(logo_rbg.width):
+                for py in range(logo_rbg.height):
+                    rv, gv, bv, av = pixels[px, py]
+                    if rv < 30 and gv < 30 and bv < 30:
+                        pixels[px, py] = (rv, gv, bv, 0)
+
+            # paste with transparency onto bg-colored canvas
             bg_left = Image.new("RGBA", (28, 28), bg_color + (255,))
             bg_left.paste(logo_rbg, mask=logo_rbg.split()[3])
             scaled.paste(bg_left.convert("RGB"), (2, 2))
