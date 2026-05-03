@@ -298,7 +298,7 @@ def run():
         govee_api.set_diy_scene(GOVEE_SKU, GOVEE_DEVICE)
         play_goal_celebration()
 
-        sleep(5)
+        sleep(60)
 
     # while True:
     #     now = time.time()
