@@ -2,7 +2,6 @@ import time
 import requests
 import os
 import govee
-import asyncio
 from time import sleep
 from PIL import Image, ImageDraw, ImageFont
 from rgbmatrix import RGBMatrix, RGBMatrixOptions, graphics
@@ -292,10 +291,9 @@ async def run():
     last_switch = time.time()
 
     while True:
-        async with govee_api:
-            await govee_api.send_scene(GOVEE_AWS)
-            play_goal_celebration()
-            await govee_api.set_color(255,0,0)
+        govee_api.send_scene(GOVEE_AWS)
+        play_goal_celebration()
+        govee_api.set_to_original_color()
 
     # while True:
     #     now = time.time()
@@ -335,4 +333,4 @@ async def run():
     #     time.sleep(0.03)
 
 if __name__ == "__main__":
-    asyncio.run(run())
+    run()
