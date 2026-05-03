@@ -367,16 +367,11 @@ def run():
     global canvas
     preferred_game_on = False
     games = []
-    prev_scores = {}
-    last_fetch = 0
-    current_page = 0
-    page_display_time = 8
-    last_switch = time()
 
     preferred_team = [
         "BUF",
         "TOR",
-        "TB"
+        "MTL"
     ]
 
     while True:
