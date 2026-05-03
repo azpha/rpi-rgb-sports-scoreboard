@@ -281,7 +281,7 @@ def draw_all_games(canvas, games, start_index):
                 canvas.SetPixel(offset + 63, row, 40, 40, 40)
 
 # --- Main loop ---
-async def run():
+def run():
     global canvas
     games = []
     prev_scores = {}
