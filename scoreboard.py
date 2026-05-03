@@ -319,6 +319,40 @@ def draw_single_game(canvas, game):
     draw_logo(canvas, away_logo, 0, 0)
     draw_logo(canvas, home_logo, 0, 16)
 
+    graphics.DrawText(
+        canvas,
+        font_small,
+        18,
+        11,
+        graphics.Color(255, 255, 255),
+        game["away"],
+    )
+    graphics.DrawText(
+        canvas,
+        font_small,
+        18,
+        27,
+        graphics.Color(255, 255, 255),
+        game["home"],
+    )
+
+    graphics.DrawText(
+        canvas,
+        font,
+        40,
+        13,
+        graphics.Color(255, 255, 255),
+        str(game["away_score"]),
+    )
+    graphics.DrawText(
+        canvas,
+        font,
+        40,
+        29,
+        graphics.Color(255, 255, 255),
+        str(game["home_score"]),
+    )
+
 
 # --- Main loop ---
 def run():
