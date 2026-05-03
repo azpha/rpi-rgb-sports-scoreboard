@@ -21,7 +21,6 @@ canvas = matrix.CreateFrameCanvas()
 font = graphics.Font()
 font.LoadFont("/usr/local/share/7x13.bdf")
 
-# A smaller font for status text
 font_small = graphics.Font()
 font_small.LoadFont("/usr/local/share/5x7.bdf")
 
@@ -41,9 +40,8 @@ def load_logo(league, abbr):
         return logo_cache[key]
 
     path = os.path.join(LOGO_DIR, f"{key}.png")
-    print(f"Looking for logo at: {path}, exists: {os.path.exists(path)}")
-
     if not os.path.exists(path):
+        print(f"Logo not found: {path}")
         logo_cache[key] = None
         return None
 
@@ -58,9 +56,7 @@ def load_logo(league, abbr):
 
 def draw_logo(canvas, img, x, y):
     if img is None:
-        print("Logo is None!")
         return
-    print(f"Drawing logo {img.size} at {x},{y}")
     for px in range(img.width):
         for py in range(img.height):
             r, g, b = img.getpixel((px, py))
@@ -99,41 +95,41 @@ def get_all_scores():
     games += get_scores("basketball", "nba")
     return games
 
-# --- Draw a single game in stacked layout ---
-# Layout per panel (64px wide, 32px tall):
-# Top half (rows 0-15):  [16x16 away logo] [away abbr] [away score]
-# Bottom half (rows 16-31): [16x16 home logo] [home abbr] [home score]
-# Status text scrolls across the bottom row
+# --- Draw all games across all panels ---
+def draw_all_games(canvas, games, start_index):
+    for i in range(4):  # one per panel
+        game_index = (start_index + i) % len(games)
+        game = games[game_index]
+        offset = i * 64  # each panel is 64px wide
 
-def draw_game(canvas, game):
-    league = game["league"]
+        league = game["league"]
+        away_logo = load_logo(league, game["away"])
+        home_logo = load_logo(league, game["home"])
 
-    away_logo = load_logo(league, game["away"])
-    home_logo = load_logo(league, game["home"])
+        # Draw logos
+        draw_logo(canvas, away_logo, offset + 0, 0)
+        draw_logo(canvas, home_logo, offset + 0, 16)
 
-    # Draw logos
-    draw_logo(canvas, away_logo, 0, 0)   # top left
-    draw_logo(canvas, home_logo, 0, 16)  # bottom left
+        # Draw team abbreviations
+        graphics.DrawText(canvas, font_small, offset + 18, 11, white, game["away"])
+        graphics.DrawText(canvas, font_small, offset + 18, 27, white, game["home"])
 
-    # Draw team abbreviations
-    graphics.DrawText(canvas, font_small, 18, 11, white, game["away"])
-    graphics.DrawText(canvas, font_small, 18, 27, white, game["home"])
+        # Draw scores
+        graphics.DrawText(canvas, font, offset + 40, 13, yellow, str(game["away_score"]))
+        graphics.DrawText(canvas, font, offset + 40, 29, yellow, str(game["home_score"]))
 
-    # Draw scores
-    graphics.DrawText(canvas, font, 40, 13, yellow, str(game["away_score"]))
-    graphics.DrawText(canvas, font, 40, 29, yellow, str(game["home_score"]))
-
-    # Draw status in grey at far right if short enough, otherwise truncate
-    status = game["status"][:10]
-    graphics.DrawText(canvas, font_small, 130, 11, grey, status)
+        # Draw a subtle divider between panels
+        if i < 3:
+            for row in range(32):
+                canvas.SetPixel(offset + 63, row, 40, 40, 40)
 
 # --- Main loop ---
 def run():
     global canvas
     games = []
     last_fetch = 0
-    current_game = 0
-    game_display_time = 8  # seconds per game
+    current_page = 0
+    page_display_time = 8  # seconds per page
     last_switch = time.time()
 
     while True:
@@ -144,18 +140,17 @@ def run():
             games = get_all_scores()
             last_fetch = now
             if not games:
-                current_game = 0
+                current_page = 0
 
-        # Switch game every N seconds
-        if games and now - last_switch > game_display_time:
-            current_game = (current_game + 1) % len(games)
+        # Switch page every N seconds
+        if games and now - last_switch > page_display_time:
+            current_page = (current_page + 4) % max(len(games), 1)
             last_switch = now
 
         canvas.Clear()
 
         if games:
-            current_game = current_game % len(games)
-            draw_game(canvas, games[current_game])
+            draw_all_games(canvas, games, current_page)
         else:
             graphics.DrawText(canvas, font, 10, 22, red, "No games today")
 
