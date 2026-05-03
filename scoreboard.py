@@ -41,6 +41,8 @@ def load_logo(league, abbr):
         return logo_cache[key]
 
     path = os.path.join(LOGO_DIR, f"{key}.png")
+    print(f"Looking for logo at: {path}, exists: {os.path.exists(path)}")
+
     if not os.path.exists(path):
         logo_cache[key] = None
         return None
@@ -56,7 +58,9 @@ def load_logo(league, abbr):
 
 def draw_logo(canvas, img, x, y):
     if img is None:
+        print("Logo is None!")
         return
+    print(f"Drawing logo {img.size} at {x},{y}")
     for px in range(img.width):
         for py in range(img.height):
             r, g, b = img.getpixel((px, py))
