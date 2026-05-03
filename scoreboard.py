@@ -38,7 +38,7 @@ grey       = graphics.Color(180, 180, 180)
 sabres_blue = graphics.Color(0, 135, 48)
 sabres_gold = graphics.Color(252, 20, 210)
 
-LOGO_DIR = "/home/alex/logos"
+LOGO_DIR = "/usr/local/share/logos"
 SABRES_ABBR = "BUF"
 
 # --- Logo cache ---
