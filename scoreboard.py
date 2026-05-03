@@ -348,6 +348,7 @@ def run():
     if preferred_game_on:
         while True:
             draw_single_game(canvas, preferred_game[0])
+            canvas = matrix.SwapOnVSync(canvas)
             sleep(0.03)
     else:
         while True:
