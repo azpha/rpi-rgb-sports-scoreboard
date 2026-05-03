@@ -7,12 +7,12 @@ LEAGUES = [
     ("hockey", "nhl"),
     ("football", "nfl"),
     ("basketball", "nba"),
+    ("baseball", "mlb")
 ]
 
-LOGO_DIR = "/home/alex/logos"
 LOGO_SIZE = (16, 16)
 
-os.makedirs(LOGO_DIR, exist_ok=True)
+os.makedirs("./assets/logos", exist_ok=True)
 
 def download_logos(sport, league):
     url = f"https://site.api.espn.com/apis/site/v2/sports/{sport}/{league}/teams"
@@ -28,6 +28,9 @@ def download_logos(sport, league):
         if not logo_url:
             print(f"No logo for {abbr}, skipping")
             continue
+        if os.path.exists(os.path.join("./assets/logos", f"{league}_{abbr}.png")):
+            print(f"Logo exists for {abbr}, skipping")
+            continue
 
         try:
             img_resp = requests.get(logo_url, timeout=10)
@@ -40,7 +43,7 @@ def download_logos(sport, league):
             background = Image.new("RGB", LOGO_SIZE, (0, 0, 0))
             background.paste(img, mask=img.split()[3])
 
-            out_path = os.path.join(LOGO_DIR, f"{league}_{abbr}.png")
+            out_path = os.path.join("./assets/logos", f"{league}_{abbr}.png")
             background.save(out_path)
             print(f"Saved {out_path}")
         except Exception as e:
