@@ -256,11 +256,11 @@ def draw_all_games(canvas, games, start_index):
         draw_logo(canvas, away_logo, offset + 0, 0)
         draw_logo(canvas, home_logo, offset + 0, 16)
 
-        graphics.DrawText(canvas, font_small, offset + 18, 11, graphics.Color(Colors.WHITE), game["away"])
-        graphics.DrawText(canvas, font_small, offset + 18, 27, graphics.Color(Colors.WHITE), game["home"])
+        graphics.DrawText(canvas, font_small, offset + 18, 11, graphics.Color(*Colors.WHITE), game["away"])
+        graphics.DrawText(canvas, font_small, offset + 18, 27, graphics.Color(*Colors.WHITE), game["home"])
 
-        graphics.DrawText(canvas, font, offset + 40, 13, graphics.Color(Colors.WHITE), str(game["away_score"]))
-        graphics.DrawText(canvas, font, offset + 40, 29, graphics.Color(Colors.WHITE), str(game["home_score"]))
+        graphics.DrawText(canvas, font, offset + 40, 13, graphics.Color(*Colors.WHITE), str(game["away_score"]))
+        graphics.DrawText(canvas, font, offset + 40, 29, graphics.Color(*Colors.WHITE), str(game["home_score"]))
 
         if i < 3:
             for row in range(32):
