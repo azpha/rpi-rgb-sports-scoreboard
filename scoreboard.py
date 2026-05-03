@@ -300,7 +300,8 @@ def run():
         play_goal_horn()
         govee_api.set_diy_scene(GOVEE_SKU, GOVEE_DEVICE)
         play_goal_celebration()
-        govee_api.set_to_original_color(GOVEE_SKU, GOVEE_DEVICE)
+
+        sleep(5)
 
     # while True:
     #     now = time.time()
