@@ -153,7 +153,7 @@ def play_goal_celebration(text, color1, color2):
         # Phase 4: white flash to end
         for _ in range(3):
             canvas.Clear()
-            frame = render_goal_frame(text, 1.0, Colors.SABRES_GOLD, Colors.SABRES_BLUE)
+            frame = render_goal_frame(text, 1.0, Colors.SABRES_GOLD.value, Colors.SABRES_BLUE.value)
             draw_pil_image(canvas, frame)
             canvas = matrix.SwapOnVSync(canvas)
             sleep(0.1)
