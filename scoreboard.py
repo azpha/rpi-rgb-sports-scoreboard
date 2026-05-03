@@ -2,7 +2,7 @@ import time
 import requests
 import os
 import govee
-import pygame
+import asyncio
 from time import sleep
 from PIL import Image, ImageDraw, ImageFont
 from rgbmatrix import RGBMatrix, RGBMatrixOptions, graphics
@@ -282,7 +282,7 @@ def draw_all_games(canvas, games, start_index):
                 canvas.SetPixel(offset + 63, row, 40, 40, 40)
 
 # --- Main loop ---
-def run():
+async def run():
     global canvas
     games = []
     prev_scores = {}
@@ -292,10 +292,10 @@ def run():
     last_switch = time.time()
 
     while True:
-        govee_api.send_scene(GOVEE_AWS)
-        play_goal_celebration()
-        sleep(10)
-        govee_api.set_to_original_color()
+        async with govee_api:
+            await govee.send_scene(GOVEE_AWS)
+            play_goal_celebration()
+            await govee_api.set_color(255,0,0)
 
     # while True:
     #     now = time.time()
@@ -335,4 +335,4 @@ def run():
     #     time.sleep(0.03)
 
 if __name__ == "__main__":
-    run()
+    asyncio.run(run())
