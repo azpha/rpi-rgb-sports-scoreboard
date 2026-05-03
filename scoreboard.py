@@ -373,63 +373,31 @@ def run():
     page_display_time = 8
     last_switch = time()
 
-    current_games = get_all_scores()
     preferred_team = [
         "BUF",
         "TOR",
         "TB"
     ]
-    preferred_game = []
-    for game in current_games:
-        print(game)
-        if game['home'] in preferred_team or game['away'] in preferred_team:
-            if game['status'] != 'Final':
-                preferred_game_on = True
-                preferred_game.append(game)
 
-    if preferred_game_on:
-        while True:
-            draw_single_game(canvas, preferred_game[0])
-            canvas = matrix.SwapOnVSync(canvas)
-            sleep(0.03)
-    else:
-        while True:
-            now = time()
+    while True:
+        games = get_all_scores()
 
-            if now - last_fetch > 30:
-                new_games = get_all_scores()
-
-                # update prev_scores
-                for game in new_games:
-                    gid = game["id"]
-                    try:
-                        prev_scores[gid] = (
-                            int(game["away_score"]),
-                            int(game["home_score"]),
-                        )
-                    except ValueError:
-                        pass
-
-                games = new_games
-                last_fetch = now
-                if not games:
-                    current_page = 0
-
-            if games and now - last_switch > page_display_time:
-                current_page = (current_page + 4) % max(len(games), 1)
-                last_switch = now
-
-            canvas.Clear()
-
-            if games:
-                draw_all_games(canvas, games, current_page)
+        if games:
+            for game in games:
+                if game['away'] in preferred_team or game['home'] in preferred_team:
+                    preferred_game_on = game
+            
+            if preferred_game_on:
+                draw_single_game(canvas, preferred_game_on)
             else:
-                graphics.DrawText(
-                    canvas, font, 10, 22, graphics.Color(Colors.RED), "No games today"
-                )
+                draw_all_games(games)
+        else:
+            graphics.DrawText(
+                canvas, font, 10, 22, graphics.Color(Colors.RED), "No games today"
+            )
 
-            canvas = matrix.SwapOnVSync(canvas)
-            sleep(0.03)
+        canvas = matrix.SwapOnVSync(canvas)
+        sleep(0.03)
 
 
 if __name__ == "__main__":
