@@ -352,6 +352,14 @@ def draw_single_game(canvas, game):
         graphics.Color(255, 255, 255),
         str(game["home_score"]),
     )
+    graphics.DrawText(
+        canvas,
+        font,
+        20,
+        29,
+        graphics.Color(255,255,255),
+        str(game["status"])
+    )
 
 
 # --- Main loop ---
