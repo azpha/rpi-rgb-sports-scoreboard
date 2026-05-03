@@ -60,21 +60,33 @@ def render_goal_frame(text, text_scale, bg_color, text_color):
     tw = bbox[2] - bbox[0]
     th = bbox[3] - bbox[1]
 
-    # center horizontally, anchor vertically to cap height not descenders
     tx = (1024 - tw) // 2
-    ty = (128 - th) // 2 - bbox[1]  # subtract bbox[1] to remove descender offset
+    ty = (128 - th) // 2 - bbox[1]
     big_draw.text((tx, ty), text, font=pil_font, fill=text_color)
 
     scaled = big_img.resize((256, 32), Image.LANCZOS)
 
-    # paste sabres logo on left and right if available
+    # paste sabres logo on left and right
     logo_path = os.path.join(LOGO_DIR, "nhl_BUF.png")
     if os.path.exists(logo_path):
         try:
-            logo = Image.open(logo_path).convert("RGB")
+            # load as RGBA to preserve transparency
+            logo = Image.open(logo_path).convert("RGBA")
             logo = logo.resize((28, 28), Image.LANCZOS)
-            scaled.paste(logo, (2, 2))
-            scaled.paste(logo, (226, 2))
+
+            # swap channels to fix RBG order: R stays, swap G and B
+            r, g, b, a = logo.split()
+            logo_rbg = Image.merge("RGBA", (r, b, g, a))
+
+            # paste with transparency mask onto background
+            bg_left = Image.new("RGBA", (28, 28), bg_color + (255,))
+            bg_left.paste(logo_rbg, mask=logo_rbg.split()[3])
+            scaled.paste(bg_left.convert("RGB"), (2, 2))
+
+            bg_right = Image.new("RGBA", (28, 28), bg_color + (255,))
+            bg_right.paste(logo_rbg, mask=logo_rbg.split()[3])
+            scaled.paste(bg_right.convert("RGB"), (226, 2))
+
         except Exception as e:
             print(f"Logo paste error: {e}")
 
