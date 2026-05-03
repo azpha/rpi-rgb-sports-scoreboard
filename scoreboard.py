@@ -289,9 +289,9 @@ def run():
     last_switch = time.time()
 
     while True:
-        govee_api.set_diy_scene(GOVEE_DEVICE, GOVEE_SKU)
+        govee_api.set_diy_scene(GOVEE_SKU, GOVEE_DEVICE)
         play_goal_celebration()
-        govee_api.set_to_original_color(GOVEE_DEVICE, GOVEE_SKU)
+        govee_api.set_to_original_color(GOVEE_SKU, GOVEE_DEVICE)
 
     # while True:
     #     now = time.time()

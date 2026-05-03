@@ -50,6 +50,7 @@ class GoveeApi:
       }
     }
 
+    print(json.dumps(payload, indent=4))
     req = requests.post(GOVEE_API_BASE_URL + 'device/control', headers=headers, json=payload)
     req.raise_for_status()
     print(req.json())
