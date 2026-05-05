@@ -397,6 +397,7 @@ def run():
             # cycle through preferred games and all games
             all_games_max_page = math.ceil(len(games) / 4)
             if now - last_switch > page_display_time:
+                print(show_preferred, show_cycle)
                 if show_preferred == True and len(preferred_games) > 0:
                     current_preferred_game += 1
                     if current_preferred_game >= len(preferred_games):
