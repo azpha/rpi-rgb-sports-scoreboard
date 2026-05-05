@@ -404,6 +404,7 @@ def run():
                     last_switch = now
                     print(preferred_games[current_preferred_game])
                     single_preferred_game = [g for g in games if preferred_games[current_preferred_game] == g['id']]
+                    print(single_preferred_game)
                     draw_single_game(canvas, single_preferred_game)
         else:
             # no games available, just draw placeholder
