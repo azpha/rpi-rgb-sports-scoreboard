@@ -381,7 +381,7 @@ def run():
                     if len(shown_game) <= 0:
                         preferred_games.remove(preferred_game)
 
-            # get preferred games
+            # get new preferred games
             for game in games:
                 if game['away'] in preferred_teams or game['home'] in preferred_teams:
                     preferred_game_on = True
@@ -394,6 +394,7 @@ def run():
                     current_page = (current_page + 4) % max(len(games), 1)
                     last_switch = now
                 
+                print('Drawing all games, no preferred games found')
                 draw_all_games(canvas, games)
             else:
                 if len(preferred_games) > 1 and now - last_switch > page_display_time:
@@ -403,12 +404,14 @@ def run():
                         current_preferred_game = (current_preferred_game + 1) % max(len(games), 1)
                     
                     last_switch = now
-                    print(preferred_games[current_preferred_game])
-                    single_preferred_game = [g for g in games if preferred_games[current_preferred_game] == g['id']]
-                    draw_single_game(canvas, single_preferred_game[0])
+                    single_preferred_game = [g for g in games if preferred_games[current_preferred_game] == g['id']][0]
+                    print(f'Switching to preferred game {single_preferred_game['home']} vs {single_preferred_game['away']}')
+                    draw_single_game(canvas, single_preferred_game)
         else:
             canvas.Clear()
-            
+
+            print('No games available')
+
             # no games available, just draw placeholder
             graphics.DrawText(canvas, font, 10, 22, graphics.Color(*Colors.RED.value), "No games today")
 
