@@ -360,7 +360,6 @@ def run():
     current_page = 0
     page_display_time = 8
     last_switch = time()
-    show_cycle = False
     show_preferred = True
 
     # preferred games
@@ -394,34 +393,31 @@ def run():
                     if 'Final' not in game['status'] and game['id'] not in preferred_games:
                         preferred_games.append(game['id'])
 
-            # cycle through preferred games and all games
             print(preferred_games)
-            all_games_max_page = math.ceil(len(games) / 4)
             if now - last_switch > page_display_time:
-                print(show_preferred, show_cycle, current_preferred_game, len(preferred_games))
-                if show_preferred == True and len(preferred_games) > 0:
-                    if current_preferred_game == len(preferred_games) - 1:
-                        show_preferred = False
-                        show_cycle = True
-                        current_page = 0
+                last_switch = now
 
-                    single_preferred_game = [g for g in games if preferred_games[current_preferred_game] == g['id']][0]
-                    print(f'Switching to preferred game {single_preferred_game['home']} vs {single_preferred_game['away']}')
-                    draw_single_game(canvas, single_preferred_game)
+                if show_preferred and len(preferred_games) > 0:
+                    single_preferred_game = next(
+                        (g for g in games if g['id'] == preferred_games[current_preferred_game]), None
+                    )
+                    if single_preferred_game:
+                        print(f'Showing preferred game {single_preferred_game["home"]} vs {single_preferred_game["away"]}')
+                        draw_single_game(canvas, single_preferred_game)
+
                     current_preferred_game += 1
-                elif show_cycle == True:
-                    print(len(games), all_games_max_page, current_page)
-                    if current_page + 4 == len(games) - 1:
+                    if current_preferred_game >= len(preferred_games):
+                        show_preferred = False
+                        current_preferred_game = 0
+                        current_page = 0
+                else:
+                    print(f'Showing all games page {current_page} / {len(games)}')
+                    draw_all_games(canvas, games, current_page)
+                    current_page += 4
+                    if current_page >= len(games):
+                        current_page = 0
                         if len(preferred_games) > 0:
                             show_preferred = True
-                            show_cycle = False
-                            current_preferred_game = 0
-                        else:
-                            current_page = 0
-
-                    print('Drawing all games')
-                    draw_all_games(canvas, games, current_page)
-                    current_page = (current_page + 4) % max(len(games), 1)
         else:
             canvas.Clear()
 
