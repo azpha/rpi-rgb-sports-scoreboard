@@ -418,11 +418,11 @@ def run():
                             current_preferred_game = 0
                         else:
                             current_page = 0
-                            current_page = (current_page + 4) % max(len(games), 1)
 
 
                     print('Drawing all games')
                     draw_all_games(canvas, games, current_page)
+                    current_page = (current_page + 4) % max(len(games), 1)
         else:
             canvas.Clear()
 
@@ -432,7 +432,7 @@ def run():
             graphics.DrawText(canvas, font, 10, 22, graphics.Color(*Colors.RED.value), "No games today")
 
         canvas = matrix.SwapOnVSync(canvas)
-        sleep(10)
+        sleep(0.03)
 
 if __name__ == "__main__":
     run()
