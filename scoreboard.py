@@ -401,7 +401,7 @@ def run():
                 print(show_preferred, show_cycle, current_preferred_game, len(preferred_games))
                 if show_preferred == True and len(preferred_games) > 0:
                     current_preferred_game += 1
-                    if current_preferred_game >= len(preferred_games):
+                    if current_preferred_game >= len(preferred_games) - 1:
                         show_preferred = False
                         show_cycle = True
                         current_preferred_game -= 1
