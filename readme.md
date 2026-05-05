@@ -19,6 +19,23 @@ I have a small setup to make this work, all specs found below
 - Download logos using the `download_logos.py` Python script
 - Run `scoreboard.py` Python script
 
+This runs as a systemd service on my Pi, with the following configuration
+
+```
+[Unit]
+Description=Scoreboard Script
+After=multi-user.target
+
+[Service]
+ExecStart=/usr/bin/python3 scoreboard.py
+WorkingDirectory=/home/pi/Documents/scoreboard
+Restart=always
+User=pi
+
+[Install]
+WantedBy=multi-user.target
+```
+
 ## Govee Lighting
 
 If you have Govee lighting you want to setup for celebrations, create a `.env` file and complete the arguments in the template file.
