@@ -410,6 +410,7 @@ def run():
 
         canvas = matrix.SwapOnVSync(canvas)
         sleep(0.03)
+        print(current_preferred_game)
 
 if __name__ == "__main__":
     run()
