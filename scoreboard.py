@@ -373,6 +373,7 @@ def run():
             last_fetch = now
 
         if games:
+            canvas.Clear()
             # clear bad preferred games out
             if len(preferred_games) > 0:
                 for preferred_game in preferred_games:
@@ -406,6 +407,8 @@ def run():
                     single_preferred_game = [g for g in games if preferred_games[current_preferred_game] == g['id']]
                     draw_single_game(canvas, single_preferred_game[0])
         else:
+            canvas.Clear()
+            
             # no games available, just draw placeholder
             graphics.DrawText(canvas, font, 10, 22, graphics.Color(*Colors.RED.value), "No games today")
 
