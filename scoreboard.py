@@ -427,7 +427,8 @@ def run():
             graphics.DrawText(canvas, font, 10, 22, graphics.Color(*Colors.RED.value), "No games today")
 
         canvas = matrix.SwapOnVSync(canvas)
-        sleep(10)
+        # sleep(10)
+        sleep(5)
 
 if __name__ == "__main__":
     run()
