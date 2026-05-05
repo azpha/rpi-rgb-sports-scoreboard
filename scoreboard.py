@@ -402,6 +402,7 @@ def run():
                         current_preferred_game = (current_preferred_game + 1) % max(len(games), 1)
                     
                     last_switch = now
+                    print(preferred_games[current_preferred_game])
                     draw_single_game(canvas, preferred_games[current_preferred_game])
         else:
             # no games available, just draw placeholder
