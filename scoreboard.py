@@ -397,47 +397,36 @@ def run():
             # cycle through preferred games and all games
             all_games_max_page = math.ceil(len(games) / 4)
             if now - last_switch > page_display_time:
-                if preferred_game_on and len(preferred_games) > 0 and current_preferred_game <= len(preferred_games):
-                    if current_preferred_game + 1 <= len(preferred_games):
-                        current_preferred_game = (current_preferred_game + 1) % max(len(games), 1)
-                    
-                        single_preferred_game = [g for g in games if preferred_games[current_preferred_game] == g['id']][0]
-                        print(f'Switching to preferred game {single_preferred_game['home']} vs {single_preferred_game['away']}')
-                        draw_single_game(canvas, single_preferred_game)
-
-                        if len(preferred_games) >= current_preferred_game:
+                if len(current_preferred_game) > 0:
+                    if current_preferred_game <= len(preferred_games):
+                        if current_preferred_game == len(preferred_games):
                             current_page = 0
-                    else:
-                        if all_games_max_page >= current_page:
-                            current_preferred_game = 0
-                        else:
-                            print(all_games_max_page)
                             current_page = (current_page + 4) % max(len(games), 1)
                             print('Drawing all games, no preferred games found')
-                            draw_all_games(canvas, games)
+                            draw_all_games(canvas, games, current_page)
+                        else:
+                            current_preferred_game += 1
+                            single_preferred_game = [g for g in games if preferred_games[current_preferred_game] == g['id']][0]
+                            print(f'Switching to preferred game {single_preferred_game['home']} vs {single_preferred_game['away']}')
+                            draw_single_game(canvas, single_preferred_game)
+                    elif current_page <= all_games_max_page:
+                        if current_page == all_games_max_page:
+                            current_preferred_game = 0
+                            single_preferred_game = [g for g in games if preferred_games[current_preferred_game] == g['id']][0]
+                            print(f'Switching to preferred game {single_preferred_game['home']} vs {single_preferred_game['away']}')
+                            draw_single_game(canvas, single_preferred_game)
+                        else:
+                            current_page = (current_page + 4) % max(len(games), 1)
+                            print('Drawing all games, no preferred games found')
+                            draw_all_games(canvas, games, current_page)
+                else:
+                    if current_page >= all_games_max_page:
+                        current_page = (current_page + 4) % max(len(games), 1)
+                    else:
+                        current_page = 0
 
-                    last_switch = now
-
-
-
-            # if not preferred_game_on or len(preferred_games) <= 0:
-            #     if now - last_switch > page_display_time:
-            #         current_page = (current_page + 4) % max(len(games), 1)
-            #         last_switch = now
-                
-            #     print('Drawing all games, no preferred games found')
-            #     draw_all_games(canvas, games)
-            # else:
-            #     if len(preferred_games) > 1 and now - last_switch > page_display_time:
-            #         if current_preferred_game + 1 > len(preferred_games):
-            #             current_preferred_game = 0
-            #         else:
-            #             current_preferred_game = (current_preferred_game + 1) % max(len(games), 1)
-                    
-            #         last_switch = now
-            #         single_preferred_game = [g for g in games if preferred_games[current_preferred_game] == g['id']][0]
-            #         print(f'Switching to preferred game {single_preferred_game['home']} vs {single_preferred_game['away']}')
-            #         draw_single_game(canvas, single_preferred_game)
+                    print('Drawing all games, no preferred games found')
+                    draw_all_games(canvas, games, current_page)
         else:
             canvas.Clear()
 
