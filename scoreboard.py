@@ -362,7 +362,6 @@ def run():
     last_switch = time()
 
     # preferred games
-    preferred_game_on = False
     current_preferred_game = 0
     preferred_games = []
     preferred_teams = [
@@ -391,13 +390,12 @@ def run():
             for game in games:
                 if game['away'] in preferred_teams or game['home'] in preferred_teams:
                     if 'Final' not in game['status']:
-                        preferred_game_on = True
                         preferred_games.append(game['id'])
 
             # cycle through preferred games and all games
             all_games_max_page = math.ceil(len(games) / 4)
             if now - last_switch > page_display_time:
-                if len(current_preferred_game) > 0:
+                if len(preferred_games) > 0:
                     if current_preferred_game <= len(preferred_games):
                         if current_preferred_game == len(preferred_games):
                             current_page = 0
