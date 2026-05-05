@@ -410,8 +410,8 @@ def run():
                     draw_single_game(canvas, single_preferred_game)
                     current_preferred_game += 1
                 elif show_cycle == True:
-                    print(len(games))
-                    if current_page > all_games_max_page:
+                    print(len(games), all_games_max_page)
+                    if current_page == all_games_max_page:
                         if len(preferred_games) > 0:
                             show_preferred = True
                             show_cycle = False
