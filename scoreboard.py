@@ -56,11 +56,11 @@ class Colors(Enum):
 
 
 # --- Govee API ---
-govee_api = govee.GoveeApi(key=os.environ["GOVEE_API_KEY"])
+if os.environ['GOVEE_API_KEY']:
+    govee_api = govee.GoveeApi(key=os.environ["GOVEE_API_KEY"])
 
 # --- PyGame Audio ---
 pygame.mixer.init()
-
 
 # --- Goal celebrations ---
 def render_goal_frame(text, text_scale, bg_color, text_color):
@@ -279,7 +279,7 @@ def draw_all_games(canvas, games, start_index):
             font_small,
             offset + 18,
             11,
-            graphics.Color(255, 255, 255),
+            graphics.Color(*Colors.RED.value),
             game["away"],
         )
         graphics.DrawText(
@@ -287,7 +287,7 @@ def draw_all_games(canvas, games, start_index):
             font_small,
             offset + 18,
             27,
-            graphics.Color(255, 255, 255),
+            graphics.Color(*Colors.WHITE.value),
             game["home"],
         )
 
@@ -296,7 +296,7 @@ def draw_all_games(canvas, games, start_index):
             font,
             offset + 40,
             13,
-            graphics.Color(255, 255, 255),
+            graphics.Color(*Colors.WHITE.value),
             str(game["away_score"]),
         )
         graphics.DrawText(
@@ -304,7 +304,7 @@ def draw_all_games(canvas, games, start_index):
             font,
             offset + 40,
             29,
-            graphics.Color(255, 255, 255),
+            graphics.Color(*Colors.WHITE.value),
             str(game["home_score"]),
         )
 
@@ -325,7 +325,7 @@ def draw_single_game(canvas, game):
         font_small,
         18,
         11,
-        graphics.Color(255, 255, 255),
+        graphics.Color(*Colors.WHITE.value),
         game["away"],
     )
     graphics.DrawText(
@@ -333,7 +333,7 @@ def draw_single_game(canvas, game):
         font_small,
         18,
         27,
-        graphics.Color(255, 255, 255),
+        graphics.Color(*Colors.WHITE.value),
         game["home"],
     )
 
@@ -342,7 +342,7 @@ def draw_single_game(canvas, game):
         font,
         40,
         13,
-        graphics.Color(255, 255, 255),
+        graphics.Color(*Colors.WHITE.value),
         str(game["away_score"]),
     )
     graphics.DrawText(
@@ -350,7 +350,7 @@ def draw_single_game(canvas, game):
         font,
         40,
         29,
-        graphics.Color(255, 255, 255),
+        graphics.Color(*Colors.WHITE.value),
         str(game["home_score"]),
     )
     graphics.DrawText(
@@ -358,7 +358,7 @@ def draw_single_game(canvas, game):
         font,
         55,
         22,
-        graphics.Color(255,255,255),
+        graphics.Color(*Colors.WHITE.value),
         str(game["status"])
     )
 
@@ -420,7 +420,7 @@ def run():
                     draw_single_game(canvas, preferred_games[current_preferred_game])
         else:
             # no games available, just draw placeholder
-            graphics.DrawText(canvas, font, 10, 22, graphics.Color(255,0,0), "No games today")
+            graphics.DrawText(canvas, font, 10, 22, graphics.Color(*Colors.RED.value), "No games today")
 
         canvas = matrix.SwapOnVSync(canvas)
         sleep(0.03)
