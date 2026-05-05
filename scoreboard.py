@@ -411,14 +411,13 @@ def run():
                     current_preferred_game += 1
                 elif show_cycle == True:
                     print(len(games), all_games_max_page, current_page)
-                    if current_page == all_games_max_page:
+                    if current_page + 4 == len(games) - 1:
                         if len(preferred_games) > 0:
                             show_preferred = True
                             show_cycle = False
                             current_preferred_game = 0
                         else:
                             current_page = 0
-
 
                     print('Drawing all games')
                     draw_all_games(canvas, games, current_page)
