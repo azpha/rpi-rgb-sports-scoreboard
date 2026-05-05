@@ -35,16 +35,10 @@ font_small = graphics.Font()
 font_big = graphics.Font()
 font.LoadFont(os.path.join(ASSET_DIR, "fonts/7x13.bdf"))
 font_small.LoadFont(os.path.join(ASSET_DIR, "fonts/5x7.bdf"))
-
-# try to load a big font for GOAL!, fall back to regular if not available
-try:
-    font_big.LoadFont(os.path.join(ASSET_DIR, "fonts/9x18.bdf"))
-except:
-    font_big = font
+font_big.LoadFont(os.path.join(ASSET_DIR, "fonts/9x18.bdf"))
 
 # --- Logo cache ---
 logo_cache = {}
-
 
 # --- Pre-built colors ---
 class Colors(Enum):
@@ -53,7 +47,6 @@ class Colors(Enum):
     RED = (255, 50, 50)
     SABRES_BLUE = (0, 135, 48)
     SABRES_GOLD = (252, 20, 210)
-
 
 # --- Govee API ---
 if os.environ['GOVEE_API_KEY']:
@@ -119,7 +112,6 @@ def render_goal_frame(text, text_scale, bg_color, text_color):
 
     return scaled
 
-
 def play_goal_celebration(text, color1, color2):
     global canvas
 
@@ -176,11 +168,9 @@ def play_goal_celebration(text, color1, color2):
     # Hold for a moment then return to scoreboard
     sleep(0.5)
 
-
 def play_audio(filename):
     pygame.mixer.music.load(os.path.join(ASSET_DIR, filename))
     pygame.mixer.music.play()
-
 
 # --- Utilities ---
 def draw_pil_image(canvas, img):
@@ -188,7 +178,6 @@ def draw_pil_image(canvas, img):
         for y in range(img.height):
             r, g, b = img.getpixel((x, y))
             canvas.SetPixel(x, y, b, g, r)  # bgr panels
-
 
 def load_logo(league, abbr):
     key = f"{league}_{abbr}"
@@ -210,7 +199,6 @@ def load_logo(league, abbr):
         logo_cache[key] = None
         return None
 
-
 def draw_logo(canvas, img, x, y):
     if img is None:
         return
@@ -218,7 +206,6 @@ def draw_logo(canvas, img, x, y):
         for py in range(img.height):
             r, g, b = img.getpixel((px, py))
             canvas.SetPixel(x + px, y + py, r, g, b)  # bgr panels
-
 
 # --- Fetch scores ---
 def get_scores(sport, league):
@@ -249,7 +236,6 @@ def get_scores(sport, league):
         print(f"Fetch error ({league}): {e}")
         return []
 
-
 def get_all_scores():
     print('fetching game scores from espn')
     games = []
@@ -259,8 +245,7 @@ def get_all_scores():
     games += get_scores("baseball", "mlb")
     return games
 
-
-# --- Draw all games across all panels ---
+# --- Game drawing ---
 def draw_all_games(canvas, games, start_index):
     for i in range(4):
         game_index = (start_index + i) % len(games)
