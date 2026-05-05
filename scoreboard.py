@@ -4,15 +4,19 @@ import govee
 import pygame
 from enum import Enum
 from time import sleep, time
+from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 from rgbmatrix import RGBMatrix, RGBMatrixOptions, graphics
 from dotenv import load_dotenv
+
+# --- Current file path for file resolution
+SCRIPT_DIR = Path(__file__).parent.resolve()
 
 # --- Load environment vars ---
 load_dotenv()
 
 # --- Default vars ---
-ASSET_DIR = "./assets"
+ASSET_DIR = os.path.join(SCRIPT_DIR, "assets")
 LOGO_DIR = os.path.join(ASSET_DIR, "logos")
 
 # --- Matrix config ---
