@@ -251,6 +251,7 @@ def get_scores(sport, league):
 
 
 def get_all_scores():
+    print('fetching game scores from espn')
     games = []
     games += get_scores("hockey", "nhl")
     games += get_scores("football", "nfl")
@@ -364,98 +365,65 @@ def draw_single_game(canvas, game):
 # --- Main loop ---
 def run():
     global canvas
-    preferred_game_on = False
     games = []
-    prev_scores = {}
     last_fetch = 0
     current_page = 0
     page_display_time = 8
     last_switch = time()
 
+    # preferred games
+    preferred_game_on = False
+    current_preferred_game = 0
+    preferred_games = []
+    preferred_teams = [
+        "BUF",
+        "TOR"
+    ]
+
     while True:
+        now = time()
 
-    #     now = time()
+        if now - last_fetch > 30 or len(games) <= 0:
+            games = get_all_scores()
+            last_fetch = now
 
-    #     if now - last_fetch > 30:
-    #         new_games = get_all_scores()
-
-    #         # update prev_scores
-    #         for game in new_games:
-    #             try:
-    #                 prev_scores[gid] = (int(game["away_score"]), int(game["home_score"]))
-    #             except ValueError:
-    #                 pass
-
-    #         games = new_games
-    #         last_fetch = now
-    #         if not games:
-    #             current_page = 0
-
-    #     if games and now - last_switch > page_display_time:
-    #         current_page = (current_page + 4) % max(len(games), 1)
-    #         last_switch = now
-
-
-    #     if games:
-    #         draw_all_games(canvas, games, current_page)
-    #     else:
-    #         graphics.DrawText(canvas, font, 10, 22, graphics.Color(Colors.RED), "No games today")
-
-    #     canvas = matrix.SwapOnVSync(canvas)
-    #     sleep(0.03)
-
-        current_page = (current_page + 4) % max(len(games), 1)
         if games:
-            draw_all_games(canvas, games, current_page)
+            # clear bad preferred games out
+            if len(preferred_games) > 0:
+                for preferred_game in preferred_games:
+                    shown_game = [g for g in games if preferred_game == g['id']]
+                    if len(shown_game) <= 0:
+                        preferred_games.remove(preferred_game)
+
+            # get preferred games
+            for game in games:
+                if game['away'] in preferred_teams or game['home'] in preferred_teams:
+                    preferred_game_on = True
+                    preferred_games.append(game['id'])
+
+            # either show preferred games or all games
+            # depending on availability
+            if not preferred_game_on or len(preferred_games) <= 0:
+                if now - last_switch > page_display_time:
+                    current_page = (current_page + 4) % max(len(games), 1)
+                    last_switch = now
+                
+                draw_all_games(canvas, games)
+            else:
+                if len(preferred_games) > 1 and now - last_switch > page_display_time:
+                    if current_preferred_game + 1 > len(preferred_games):
+                        current_preferred_game = 0
+                    else:
+                        current_preferred_game = (current_preferred_game + 1) % max(len(games), 1)
+                    
+                    last_switch = now
+                    draw_single_game(canvas, preferred_games[current_preferred_game])
         else:
+            # no games available, just draw placeholder
             graphics.DrawText(canvas, font, 10, 22, graphics.Color(255,0,0), "No games today")
 
         canvas = matrix.SwapOnVSync(canvas)
         sleep(0.03)
-
-# --- Main loop ---
-# def run():
-#     global canvas
-#     current_page = 0
-#     preferred_game_on = False
-#     preferred_game_ids = []
-
-#     preferred_team = [
-#         "BUF",
-#         "TOR",
-#         "MTL"
-#     ]
-
-#     while True:
-#         games = get_all_scores()
-
-#         if games:
-#             for game in games:
-#                 if game['away'] in preferred_team or game['home'] in preferred_team:
-#                     preferred_game_on = True
-#                     preferred_game_ids.append(game['id'])
-#                     break
-
-#             if not preferred_game_on:
-#                 for preferred_game in preferred_game_ids:
-#                     shown_game = [g for g in games if preferred_game == g['id']]
-#                     print(shown_game)
-
-#                     draw_single_game(canvas, shown_game[0])
-#                     canvas = matrix.SwapOnVSync(canvas)
-#             else:
-#                 current_page = (current_page + 4) % max(len(games), 1)
-#                 draw_all_games(canvas, games, current_page)
-#                 canvas = matrix.SwapOnVSync(canvas)
-#         else:
-#             graphics.DrawText(
-#                 canvas, font, 10, 22, graphics.Color(Colors.RED), "No games today"
-#             )
-#             canvas = matrix.SwapOnVSync(canvas)
-
-#         sleep(10)
-#         canvas.Clear()
-#         canvas = matrix.SwapOnVSync(canvas)
 
 if __name__ == "__main__":
     run()
