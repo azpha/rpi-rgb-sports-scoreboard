@@ -378,14 +378,15 @@ def run():
             if len(preferred_games) > 0:
                 for preferred_game in preferred_games:
                     shown_game = [g for g in games if preferred_game == g['id']]
-                    if len(shown_game) <= 0:
+                    if len(shown_game) <= 0 or "Final" in shown_game[0]['status']:
                         preferred_games.remove(preferred_game)
 
             # get new preferred games
             for game in games:
                 if game['away'] in preferred_teams or game['home'] in preferred_teams:
-                    preferred_game_on = True
-                    preferred_games.append(game['id'])
+                    if 'Final' not in game['status']:
+                        preferred_game_on = True
+                        preferred_games.append(game['id'])
 
             # either show preferred games or all games
             # depending on availability
