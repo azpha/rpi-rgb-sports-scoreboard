@@ -369,7 +369,8 @@ def run():
         ("BUF", "nfl"),
         ("BUF", "nhl"),
         ("TOR", "mlb"),
-        ("LAL", "nba")
+        ("LAL", "nba"),
+        ("SEA", "nfl")
     ]
 
     while True:
