@@ -366,9 +366,10 @@ def run():
     current_preferred_game = 0
     preferred_games = []
     preferred_teams = [
-        "BUF",
-        "TOR",
-        "COL"
+        ("BUF", "nfl"),
+        ("BUF", "nhl"),
+        ("TOR", "mlb"),
+        ("LAL", "nba")
     ]
 
     while True:
@@ -377,6 +378,7 @@ def run():
         if now - last_fetch > 30 or len(games) <= 0:
             games = get_all_scores()
             last_fetch = now
+            print(games)
 
         if games:
             canvas.Clear()
@@ -389,7 +391,7 @@ def run():
 
             # get new preferred games
             for game in games:
-                if game['away'] in preferred_teams or game['home'] in preferred_teams:
+                if (game['away'], game['league']) in preferred_teams or (game['home'], game['league']) in preferred_teams:
                     if 'Final' not in game['status'] and game['id'] not in preferred_games:
                         preferred_games.append(game['id'])
 
