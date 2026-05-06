@@ -28,6 +28,7 @@ After=multi-user.target
 
 [Service]
 ExecStart=/usr/bin/python3 scoreboard.py
+KillSignal=SIGINT
 WorkingDirectory=/home/pi/Documents/scoreboard
 Restart=always
 User=pi
@@ -35,6 +36,14 @@ User=pi
 [Install]
 WantedBy=multi-user.target
 ```
+
+Make usre to update paths accordingly.
+
+## Adding more leagues/teams
+
+Simply add the league & sport to the `get_all_scores()` function in scoreboard.py. These should be relatively self-explanitory knowing the league name/sport name.
+
+Make sure you get logos as well, doing the same in download_logos.py and running the script again.
 
 ## Govee Lighting
 
