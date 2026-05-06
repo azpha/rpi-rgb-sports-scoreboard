@@ -370,7 +370,6 @@ def run():
         ("BUF", "nhl"),
         ("TOR", "mlb"),
         ("LAL", "nba"),
-        ("SEA", "nfl")
     ]
 
     while True:
@@ -379,7 +378,6 @@ def run():
         if now - last_fetch > 30 or len(games) <= 0:
             games = get_all_scores()
             last_fetch = now
-            print(games)
 
         if games:
             canvas.Clear()
