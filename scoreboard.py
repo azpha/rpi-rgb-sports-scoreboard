@@ -210,7 +210,7 @@ def draw_logo(canvas, img, x, y):
     for px in range(img.width):
         for py in range(img.height):
             r, g, b = img.getpixel((px, py))
-            canvas.SetPixel(x + px, y + py, r, g, b)  # bgr panels
+            canvas.SetPixel(x + px, y + py, r, b, g)  # bgr panels
 
 # --- Fetch scores ---
 def get_scores(sport, league):
