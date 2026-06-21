@@ -1,9 +1,9 @@
 import os
 import govee
 import pygame
-from time import sleep, time
+from time import sleep
 from PIL import Image, ImageDraw, ImageFont
-from rgbmatrix import RGBMatrix, RGBMatrixOptions, graphics
+from rgbmatrix import RGBMatrix, RGBMatrixOptions
 from dotenv import load_dotenv
 from utils.data import LOGO_DIR, ASSET_DIR
 from utils.colors import Colors
