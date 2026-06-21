@@ -54,11 +54,17 @@ class Colors(Enum):
     SABRES_GOLD = (252, 20, 210)
 
 # --- Govee API ---
-if os.environ['GOVEE_API_KEY']:
+if os.environ.get('GOVEE_API_KEY'):
     govee_api = govee.GoveeApi(key=os.environ["GOVEE_API_KEY"])
 
 # --- PyGame Audio ---
-pygame.mixer.init()
+# FIX: guard pygame init so a missing audio device on headless Pi doesn't segfault
+try:
+    pygame.mixer.init()
+    audio_available = True
+except pygame.error as e:
+    print(f"Audio init failed: {e}")
+    audio_available = False
 
 # --- Goal celebrations ---
 def render_goal_frame(text, text_scale, bg_color, text_color):
@@ -66,7 +72,6 @@ def render_goal_frame(text, text_scale, bg_color, text_color):
     big_img = Image.new("RGB", (1024, 128), bg_color)
     big_draw = ImageDraw.Draw(big_img)
 
-    # rpi specific, fall back to default font if not existing
     try:
         pil_font = ImageFont.truetype(
             "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", big_h
@@ -84,18 +89,15 @@ def render_goal_frame(text, text_scale, bg_color, text_color):
 
     scaled = big_img.resize((256, 32), Image.LANCZOS)
 
-    # paste sabres logo on left and right
     logo_path = os.path.join(LOGO_DIR, "nhl_BUF.png")
     if os.path.exists(logo_path):
         try:
             logo = Image.open(logo_path).convert("RGBA")
             logo = logo.resize((28, 28), Image.LANCZOS)
 
-            # swap G and B channels for RBG order
             r, g, b, a = logo.split()
             logo_rbg = Image.merge("RGBA", (r, b, g, a))
 
-            # make near-black pixels transparent
             pixels = logo_rbg.load()
             for px in range(logo_rbg.width):
                 for py in range(logo_rbg.height):
@@ -103,7 +105,6 @@ def render_goal_frame(text, text_scale, bg_color, text_color):
                     if rv < 30 and gv < 30 and bv < 30:
                         pixels[px, py] = (rv, gv, bv, 0)
 
-            # paste with transparency onto bg-colored canvas
             bg_left = Image.new("RGBA", (28, 28), bg_color + (255,))
             bg_left.paste(logo_rbg, mask=logo_rbg.split()[3])
             scaled.paste(bg_left.convert("RGB"), (2, 2))
@@ -163,24 +164,31 @@ def play_goal_celebration(text, color1, color2):
             canvas = matrix.SwapOnVSync(canvas)
             sleep(0.1)
 
-    # clear board
-    canvas = canvas.Clear()
+    # FIX: don't reassign canvas on .Clear() — it returns None in some bindings
+    canvas.Clear()
     canvas = matrix.SwapOnVSync(canvas)
 
     # stop music if playing
-    pygame.mixer.music.stop()
+    if audio_available:
+        pygame.mixer.music.stop()
 
-    # Hold for a moment then return to scoreboard
     sleep(0.5)
 
 def play_audio(filename):
+    if not audio_available:
+        return
     pygame.mixer.music.load(os.path.join(ASSET_DIR, filename))
     pygame.mixer.music.play()
 
 # --- Utilities ---
 def draw_pil_image(canvas, img):
+    # FIX: ensure RGB (no alpha channel) to avoid 4-tuple unpack crash
+    img = img.convert("RGB")
     for x in range(img.width):
         for y in range(img.height):
+            # FIX: bounds check so we never call SetPixel out of matrix range
+            if x >= 256 or y >= 32:
+                continue
             r, g, b = img.getpixel((x, y))
             canvas.SetPixel(x, y, b, g, r)  # bgr panels
 
@@ -196,6 +204,7 @@ def load_logo(league, abbr):
         return None
 
     try:
+        # FIX: convert to RGB here so draw_logo always gets 3-channel pixels
         img = Image.open(path).convert("RGB")
         logo_cache[key] = img
         return img
@@ -209,6 +218,7 @@ def draw_logo(canvas, img, x, y):
         return
     for px in range(img.width):
         for py in range(img.height):
+            # FIX: unpack as RGB (load_logo guarantees RGB now)
             r, g, b = img.getpixel((px, py))
             canvas.SetPixel(x + px, y + py, r, b, g)  # bgr panels
 
@@ -362,7 +372,6 @@ def run():
     last_switch = time()
     show_preferred = True
 
-    # preferred games
     current_preferred_game = 0
     preferred_games = []
     preferred_teams = [
@@ -381,20 +390,22 @@ def run():
 
         if games:
             canvas.Clear()
-            # clear bad preferred games out
+
+            # clear finished preferred games
             if len(preferred_games) > 0:
-                for preferred_game in preferred_games:
+                for preferred_game in preferred_games[:]:
                     shown_game = [g for g in games if preferred_game == g['id']]
                     if len(shown_game) <= 0 or "Final" in shown_game[0]['status']:
                         preferred_games.remove(preferred_game)
 
-            # get new preferred games
+            # collect new preferred games
             for game in games:
                 if (game['away'], game['league']) in preferred_teams or (game['home'], game['league']) in preferred_teams:
                     if 'Final' not in game['status'] and game['id'] not in preferred_games:
                         preferred_games.append(game['id'])
 
             print(preferred_games)
+
             if now - last_switch > page_display_time:
                 last_switch = now
 
@@ -421,10 +432,7 @@ def run():
                             show_preferred = True
         else:
             canvas.Clear()
-
             print('No games available')
-
-            # no games available, just draw placeholder
             graphics.DrawText(canvas, font, 10, 22, graphics.Color(*Colors.RED.value), "No games today")
 
         canvas = matrix.SwapOnVSync(canvas)
