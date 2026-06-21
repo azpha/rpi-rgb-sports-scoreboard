@@ -1,24 +1,16 @@
-import requests
 import os
 import govee
-import math
 import pygame
-from enum import Enum
 from time import sleep, time
-from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 from rgbmatrix import RGBMatrix, RGBMatrixOptions, graphics
 from dotenv import load_dotenv
-
-# --- Current file path for file resolution
-SCRIPT_DIR = Path(__file__).parent.resolve()
+from utils.data import LOGO_DIR, ASSET_DIR
+from utils.colors import Colors
+import modes.score as score_mode
 
 # --- Load environment vars ---
 load_dotenv()
-
-# --- Default vars ---
-ASSET_DIR = os.path.join(SCRIPT_DIR, "assets")
-LOGO_DIR = os.path.join(ASSET_DIR, "logos")
 
 # --- Matrix config ---
 options = RGBMatrixOptions()
@@ -33,25 +25,6 @@ options.brightness = 80
 
 matrix = RGBMatrix(options=options)
 canvas = matrix.CreateFrameCanvas()
-
-# --- Font initialization ---
-font = graphics.Font()
-font_small = graphics.Font()
-font_big = graphics.Font()
-font.LoadFont(os.path.join(ASSET_DIR, "fonts/7x13.bdf"))
-font_small.LoadFont(os.path.join(ASSET_DIR, "fonts/5x7.bdf"))
-font_big.LoadFont(os.path.join(ASSET_DIR, "fonts/9x18.bdf"))
-
-# --- Logo cache ---
-logo_cache = {}
-
-# --- Pre-built colors ---
-class Colors(Enum):
-    WHITE = (255, 255, 255)
-    YELLOW = (255, 200, 0)
-    RED = (255, 50, 50)
-    SABRES_BLUE = (0, 135, 48)
-    SABRES_GOLD = (252, 20, 210)
 
 # --- Govee API ---
 if os.environ.get('GOVEE_API_KEY'):
@@ -192,251 +165,13 @@ def draw_pil_image(canvas, img):
             r, g, b = img.getpixel((x, y))
             canvas.SetPixel(x, y, b, g, r)  # bgr panels
 
-def load_logo(league, abbr):
-    key = f"{league}_{abbr}"
-    if key in logo_cache:
-        return logo_cache[key]
-
-    path = os.path.join(LOGO_DIR, f"{key}.png")
-    if not os.path.exists(path):
-        print(f"Logo not found: {path}")
-        logo_cache[key] = None
-        return None
-
-    try:
-        # FIX: convert to RGB here so draw_logo always gets 3-channel pixels
-        img = Image.open(path).convert("RGB")
-        logo_cache[key] = img
-        return img
-    except Exception as e:
-        print(f"Error loading logo {key}: {e}")
-        logo_cache[key] = None
-        return None
-
-def draw_logo(canvas, img, x, y):
-    if img is None:
-        return
-    for px in range(img.width):
-        for py in range(img.height):
-            # FIX: unpack as RGB (load_logo guarantees RGB now)
-            r, g, b = img.getpixel((px, py))
-            canvas.SetPixel(x + px, y + py, r, b, g)  # bgr panels
-
-# --- Fetch scores ---
-def get_scores(sport, league):
-    url = f"https://site.api.espn.com/apis/site/v2/sports/{sport}/{league}/scoreboard"
-    try:
-        resp = requests.get(url, timeout=5)
-        resp.raise_for_status()
-        games = []
-        for event in resp.json().get("events", []):
-            comp = event["competitions"][0]
-            teams = comp["competitors"]
-            home = next(t for t in teams if t["homeAway"] == "home")
-            away = next(t for t in teams if t["homeAway"] == "away")
-            status = event["status"]["type"]["shortDetail"]
-            games.append(
-                {
-                    "league": league,
-                    "away": away["team"]["abbreviation"].upper(),
-                    "away_score": away["score"],
-                    "home": home["team"]["abbreviation"].upper(),
-                    "home_score": home["score"],
-                    "status": status,
-                    "id": event["id"],
-                }
-            )
-        return games
-    except Exception as e:
-        print(f"Fetch error ({league}): {e}")
-        return []
-
-def get_all_scores():
-    print('fetching game scores from espn')
-    games = []
-    games += get_scores("hockey", "nhl")
-    games += get_scores("football", "nfl")
-    games += get_scores("basketball", "nba")
-    games += get_scores("baseball", "mlb")
-    return games
-
-# --- Game drawing ---
-def draw_all_games(canvas, games, start_index):
-    for i in range(4):
-        game_index = (start_index + i) % len(games)
-        game = games[game_index]
-        offset = i * 64
-
-        league = game["league"]
-        away_logo = load_logo(league, game["away"])
-        home_logo = load_logo(league, game["home"])
-
-        draw_logo(canvas, away_logo, offset + 0, 0)
-        draw_logo(canvas, home_logo, offset + 0, 16)
-
-        graphics.DrawText(
-            canvas,
-            font_small,
-            offset + 18,
-            11,
-            graphics.Color(*Colors.RED.value),
-            game["away"],
-        )
-        graphics.DrawText(
-            canvas,
-            font_small,
-            offset + 18,
-            27,
-            graphics.Color(*Colors.WHITE.value),
-            game["home"],
-        )
-
-        graphics.DrawText(
-            canvas,
-            font,
-            offset + 40,
-            13,
-            graphics.Color(*Colors.WHITE.value),
-            str(game["away_score"]),
-        )
-        graphics.DrawText(
-            canvas,
-            font,
-            offset + 40,
-            29,
-            graphics.Color(*Colors.WHITE.value),
-            str(game["home_score"]),
-        )
-
-        if i < 3:
-            for row in range(32):
-                canvas.SetPixel(offset + 63, row, 40, 40, 40)
-
-def draw_single_game(canvas, game):
-    league = game["league"]
-    home_logo = load_logo(league, game["home"])
-    away_logo = load_logo(league, game["away"])
-
-    draw_logo(canvas, away_logo, 0, 0)
-    draw_logo(canvas, home_logo, 0, 16)
-
-    graphics.DrawText(
-        canvas,
-        font_small,
-        18,
-        11,
-        graphics.Color(*Colors.WHITE.value),
-        game["away"],
-    )
-    graphics.DrawText(
-        canvas,
-        font_small,
-        18,
-        27,
-        graphics.Color(*Colors.WHITE.value),
-        game["home"],
-    )
-
-    graphics.DrawText(
-        canvas,
-        font,
-        40,
-        13,
-        graphics.Color(*Colors.WHITE.value),
-        str(game["away_score"]),
-    )
-    graphics.DrawText(
-        canvas,
-        font,
-        40,
-        29,
-        graphics.Color(*Colors.WHITE.value),
-        str(game["home_score"]),
-    )
-    graphics.DrawText(
-        canvas,
-        font,
-        55,
-        22,
-        graphics.Color(*Colors.WHITE.value),
-        str(game["status"])
-    )
-
 # --- Main loop ---
 def run():
     global canvas
-    games = []
-    last_fetch = 0
-    current_page = 0
-    page_display_time = 8
-    last_switch = time()
-    show_preferred = True
-
-    current_preferred_game = 0
-    preferred_games = []
-    preferred_teams = [
-        ("BUF", "nfl"),
-        ("BUF", "nhl"),
-        ("TOR", "mlb"),
-        ("LAL", "nba"),
-    ]
 
     while True:
-        now = time()
-
-        if now - last_fetch > 30 or len(games) <= 0:
-            games = get_all_scores()
-            last_fetch = now
-
-        if games:
-            canvas.Clear()
-
-            # clear finished preferred games
-            if len(preferred_games) > 0:
-                for preferred_game in preferred_games[:]:
-                    shown_game = [g for g in games if preferred_game == g['id']]
-                    if len(shown_game) <= 0 or "Final" in shown_game[0]['status']:
-                        preferred_games.remove(preferred_game)
-
-            # collect new preferred games
-            for game in games:
-                if (game['away'], game['league']) in preferred_teams or (game['home'], game['league']) in preferred_teams:
-                    if 'Final' not in game['status'] and game['id'] not in preferred_games:
-                        preferred_games.append(game['id'])
-
-            print(preferred_games)
-
-            if now - last_switch > page_display_time:
-                last_switch = now
-
-                if show_preferred and len(preferred_games) > 0:
-                    single_preferred_game = next(
-                        (g for g in games if g['id'] == preferred_games[current_preferred_game]), None
-                    )
-                    if single_preferred_game:
-                        print(f'Showing preferred game {single_preferred_game["home"]} vs {single_preferred_game["away"]}')
-                        draw_single_game(canvas, single_preferred_game)
-
-                    current_preferred_game += 1
-                    if current_preferred_game >= len(preferred_games):
-                        show_preferred = False
-                        current_preferred_game = 0
-                        current_page = 0
-                else:
-                    print(f'Showing all games page {current_page} / {len(games)}')
-                    draw_all_games(canvas, games, current_page)
-                    current_page += 4
-                    if current_page >= len(games):
-                        current_page = 0
-                        if len(preferred_games) > 0:
-                            show_preferred = True
-        else:
-            canvas.Clear()
-            print('No games available')
-            graphics.DrawText(canvas, font, 10, 22, graphics.Color(*Colors.RED.value), "No games today")
-
-        canvas = matrix.SwapOnVSync(canvas)
-        sleep(10)
+        canvas_ref = score_mode.draw_frame(canvas)
+        canvas = matrix.SwapOnVSync(canvas_ref)
 
 if __name__ == "__main__":
     run()
