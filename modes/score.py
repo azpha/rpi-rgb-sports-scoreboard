@@ -2,8 +2,7 @@ import requests
 import utils.logos as logos
 from PIL import Image, ImageDraw
 from rgbmatrix import graphics
-from utils.colors import Colors
-from utils.fonts import font, font_small
+from utils.vars import Colors, font, font_small
 from time import time
 
 # --- State ---
