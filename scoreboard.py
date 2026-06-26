@@ -175,6 +175,7 @@ def run():
     current_mode = 0
 
     while True:
+        print(times_ran)
         if times_ran >= 3:
             times_ran = 0
 
