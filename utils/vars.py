@@ -18,6 +18,7 @@ LOGO_DIR = os.path.join(ASSET_DIR, "logos")
 PANEL_WIDTH = 256
 PANEL_HEIGHT = 32
 GAME_WIDTH = 128
+FANTASY_WIDTH = 64
 DIVIDER_COLOR = (40, 40, 40)
 
 font = graphics.Font()

@@ -2,7 +2,7 @@ import requests
 from PIL import Image
 from rgbmatrix import graphics
 import utils.logos as logos
-from utils.vars import Colors, font, font_small, PANEL_WIDTH, PANEL_HEIGHT, GAME_WIDTH, DIVIDER_COLOR
+from utils.vars import Colors, font, font_small, PANEL_WIDTH, PANEL_HEIGHT, FANTASY_WIDTH, DIVIDER_COLOR
 from time import time
 
 FETCH_INTERVAL = 60  # seconds between API calls
@@ -122,13 +122,13 @@ def _build_virtual_canvas(cells):
     if not cells:
         return None
     n       = len(cells)
-    total_w = GAME_WIDTH * (n + 4)   # +4 tail so wrap never shows black
+    total_w = FANTASY_WIDTH * (n + 4)   # +4 tail so wrap never shows black
     img     = Image.new("RGB", (total_w, PANEL_HEIGHT), (0, 0, 0))
 
     for i, cell in enumerate(cells * 2):
         if i >= n + 4:
             break
-        _render_pil(img, cell, i * GAME_WIDTH)
+        _render_pil(img, cell, i * FANTASY_WIDTH)
 
     return img, n
 
@@ -136,7 +136,7 @@ def _build_virtual_canvas(cells):
 def _render_pil(img, cell, x):
     # right-edge divider
     for y in range(PANEL_HEIGHT):
-        img.putpixel((x + GAME_WIDTH - 1, y), DIVIDER_COLOR)
+        img.putpixel((x + FANTASY_WIDTH - 1, y), DIVIDER_COLOR)
 
     # NFL team logo for player cells
     if cell["type"] == "player" and cell["nfl_team"]:
@@ -161,13 +161,13 @@ def _blit_slice(canvas, img, offset):
 # Text overlay (drawn on top of the blitted PIL layer)
 # ---------------------------------------------------------------------------
 def _draw_overlay(canvas, cells, scroll_x):
-    total_w = GAME_WIDTH * len(cells)
+    total_w = FANTASY_WIDTH * len(cells)
 
     for i, cell in enumerate(cells):
-        bx = i * GAME_WIDTH - scroll_x
+        bx = i * FANTASY_WIDTH - scroll_x
         for wrap in [0, total_w]:
             x = bx + wrap
-            if x + GAME_WIDTH < 0 or x >= PANEL_WIDTH:
+            if x + FANTASY_WIDTH < 0 or x >= PANEL_WIDTH:
                 continue
             if cell["type"] == "team_info":
                 _draw_team_info(canvas, cell, x)
@@ -224,7 +224,7 @@ def _draw_player(canvas, cell, x):
         ind_map   = {"Questionable": "Q", "Doubtful": "D", "Out": "X", "IR": "IR"}
         indicator = ind_map.get(injury, "?")
         ind_color = Colors.YELLOW.value if injury in ("Questionable", "Doubtful") else Colors.RED.value
-        graphics.DrawText(canvas, font_small, x + GAME_WIDTH - 10, 7,
+        graphics.DrawText(canvas, font_small, x + FANTASY_WIDTH - 10, 7,
                           _rbg(ind_color), indicator)
 
     # Position + fantasy points
@@ -265,7 +265,7 @@ def draw_frame(canvas):
         _virtual_dirty = False
         _scroll_x = 0
 
-    total_scroll_w = GAME_WIDTH * len(_cells)
+    total_scroll_w = FANTASY_WIDTH * len(_cells)
 
     canvas.Clear()
 
