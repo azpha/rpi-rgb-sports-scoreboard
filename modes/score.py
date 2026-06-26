@@ -164,12 +164,12 @@ def _draw_text_overlay(canvas, ordered, scroll_x):
                 date = game_status_split[0].strip()
                 time = game_status_split[1].strip()
 
-                graphics.DrawText(canvas, font_small, x + 45, 20,
+                graphics.DrawText(canvas, font_small, x + 65, 15,
                                   _rbg(Colors.YELLOW.value), date)
-                graphics.DrawText(canvas, font_small, x + 45, 25,
+                graphics.DrawText(canvas, font_small, x + 65, 20,
                                   _rbg(Colors.YELLOW.value), time)
             else:
-                graphics.DrawText(canvas, font_small, x + 45, 25,
+                graphics.DrawText(canvas, font_small, x + 45, 20,
                                   _rbg(Colors.YELLOW.value), game["status"])
 
 
