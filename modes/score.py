@@ -27,7 +27,7 @@ _virtual_dirty = True      # rebuild the virtual canvas on next frame
 
 PANEL_WIDTH = 256          # 4 × 64px panels
 PANEL_HEIGHT = 32
-GAME_WIDTH = 64            # each game slot is one panel wide
+GAME_WIDTH = 128            # each game slot is one panel wide
 DIVIDER_COLOR = (40, 40, 40)
 
 # --- Color helpers ---
@@ -166,7 +166,7 @@ def _draw_text_overlay(canvas, ordered, scroll_x):
 
                 graphics.DrawText(canvas, font_small, x + 18, 20,
                                   _rbg(Colors.YELLOW.value), date)
-                graphics.drawText(canvas, font_small, x + 18, 25,
+                graphics.DrawText(canvas, font_small, x + 18, 25,
                                   _rbg(Colors.YELLOW.value), time)
 
 
