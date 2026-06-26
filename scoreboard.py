@@ -167,7 +167,6 @@ def draw_pil_image(canvas, img):
             r, g, b = img.getpixel((x, y))
             canvas.SetPixel(x, y, b, g, r)  # bgr panels
 
-# --- Main loop ---
 def run():
     global canvas
     times_ran = 0
@@ -175,12 +174,10 @@ def run():
     current_mode = 0
 
     while True:
-        print(times_ran)
         if times_ran >= 3:
             times_ran = 0
-
-            ++current_mode
-            if current_mode > len(supported_modes):
+            current_mode += 1
+            if current_mode >= len(supported_modes):
                 current_mode = 0
 
         if supported_modes[current_mode] == "score":
@@ -190,7 +187,7 @@ def run():
             canvas_ref = fantasy_mode.draw_frame(canvas)
             canvas = matrix.SwapOnVSync(canvas_ref)
 
-        ++times_ran
+        times_ran += 1
 
 if __name__ == "__main__":
     run()
