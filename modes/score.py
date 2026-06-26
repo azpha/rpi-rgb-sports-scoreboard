@@ -168,6 +168,9 @@ def _draw_text_overlay(canvas, ordered, scroll_x):
                                   _rbg(Colors.YELLOW.value), date)
                 graphics.DrawText(canvas, font_small, x + 18, 25,
                                   _rbg(Colors.YELLOW.value), time)
+            else:
+                graphics.DrawText(canvas, font_small x + 45, 25,
+                                  _rbg(Colors.YELLOW.value), game["status"])
 
 
 
