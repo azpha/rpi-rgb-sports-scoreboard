@@ -153,9 +153,23 @@ def _draw_text_overlay(canvas, ordered, scroll_x):
                               _rbg(Colors.WHITE.value), str(game["home_score"]))
 
             # status line — only on preferred games (they get a wider single-game view)
-            if game["id"] in set(_preferred_games):
+            # if game["id"] in set(_preferred_games):
+            #     graphics.DrawText(canvas, font_small, x + 18, 20,
+            #                       _rbg(Colors.YELLOW.value), "\n".join(game["status"].split("-")))
+
+            # if the time is shown it should be split between lines
+            # if not, just display the status
+            if "AM" in game["status"] or "PM" in game["status"]:
+                game_status_split = game["status"].split("-")
+                date = game_status_split[0].strip()
+                time = game_status_split[1].strip()
+
                 graphics.DrawText(canvas, font_small, x + 18, 20,
-                                  _rbg(Colors.YELLOW.value), "\n".join(game["status"].split("-")))
+                                  _rbg(Colors.YELLOW.value), date)
+                graphics.drawText(canvas, font_small, x + 18, 25,
+                                  _rbg(Colors.YELLOW.value), time)
+
+
 
 # --- Preferred / stale game management ---
 def _update_preferred():
