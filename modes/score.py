@@ -1,8 +1,8 @@
 import requests
 import utils.logos as logos
-from PIL import Image, ImageDraw
+from PIL import Image
 from rgbmatrix import graphics
-from utils.vars import Colors, font, font_small
+from utils.vars import Colors, font, font_small, PANEL_WIDTH, PANEL_HEIGHT, GAME_WIDTH, DIVIDER_COLOR
 from time import time
 
 # --- State ---
@@ -24,11 +24,6 @@ _frames_per_tick = 2       # how many main loop ticks per scroll step (lower = f
 _tick = 0
 _virtual_canvas = None     # PIL Image of the full wide render
 _virtual_dirty = True      # rebuild the virtual canvas on next frame
-
-PANEL_WIDTH = 256          # 4 × 64px panels
-PANEL_HEIGHT = 32
-GAME_WIDTH = 128            # each game slot is one panel wide
-DIVIDER_COLOR = (40, 40, 40)
 
 # --- Color helpers ---
 def _rbg(color_tuple):

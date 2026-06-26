@@ -167,10 +167,22 @@ def draw_pil_image(canvas, img):
 # --- Main loop ---
 def run():
     global canvas
+    times_ran = 0
+    supported_modes = ["score", "fantasy"]
+    current_mode = 0
 
     while True:
-        canvas_ref = score_mode.draw_frame(canvas)
-        canvas = matrix.SwapOnVSync(canvas_ref)
+        if times_ran >= 3:
+            times_ran = 0
+
+            ++current_mode
+            if current_mode > len(supported_modes):
+                current_mode = 0
+
+        if supported_modes[current_mode] == "score":
+            canvas_ref = score_mode.draw_frame(canvas)
+            canvas = matrix.SwapOnVSync(canvas_ref)
+            ++times_ran
 
 if __name__ == "__main__":
     run()

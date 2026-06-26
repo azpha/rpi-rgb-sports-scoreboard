@@ -15,6 +15,11 @@ SCRIPT_DIR = Path(__file__).parent.resolve()
 ASSET_DIR = os.path.join(SCRIPT_DIR, "../assets")
 LOGO_DIR = os.path.join(ASSET_DIR, "logos")
 
+PANEL_WIDTH = 256
+PANEL_HEIGHT = 32
+GAME_WIDTH = 128
+DIVIDER_COLOR = (40, 40, 40)
+
 font = graphics.Font()
 font_small = graphics.Font()
 font_big = graphics.Font()
