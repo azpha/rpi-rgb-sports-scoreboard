@@ -29,6 +29,13 @@ PANEL_HEIGHT = 32
 GAME_WIDTH = 64            # each game slot is one panel wide
 DIVIDER_COLOR = (40, 40, 40)
 
+# --- Color helpers ---
+def _grb(color_tuple):
+    """Convert an (R, G, B) tuple to a graphics.Color with R and G swapped
+    to correct for GRB panel channel ordering on Waveshare P2.5 panels."""
+    r, g, b = color_tuple
+    return graphics.Color(g, r, b)
+
 # --- Fetch ---
 def _get_scores(sport, league):
     url = f"https://site.api.espn.com/apis/site/v2/sports/{sport}/{league}/scoreboard"
@@ -114,7 +121,7 @@ def _blit_slice(canvas, pil_img, x_offset):
         src_x = (x_offset + x) % total_width
         for y in range(PANEL_HEIGHT):
             r, g, b = pil_img.getpixel((src_x, y))
-            canvas.SetPixel(x, y, b, g, r)  # BGR panels
+            canvas.SetPixel(x, y, g, r, b)  # GRB panels: swap R and G
 
 # --- Draw text onto the virtual canvas using PIL (since rgbmatrix fonts need a real canvas) ---
 # We use rgbmatrix DrawText on the live canvas offset by -scroll_x for text only,
@@ -136,18 +143,18 @@ def _draw_text_overlay(canvas, ordered, scroll_x):
                 continue
 
             graphics.DrawText(canvas, font_small, x + 18, 11,
-                              graphics.Color(*Colors.RED.value), game["away"])
+                              _grb(Colors.RED.value), game["away"])
             graphics.DrawText(canvas, font_small, x + 18, 27,
-                              graphics.Color(*Colors.WHITE.value), game["home"])
+                              _grb(Colors.WHITE.value), game["home"])
             graphics.DrawText(canvas, font, x + 40, 13,
-                              graphics.Color(*Colors.WHITE.value), str(game["away_score"]))
+                              _grb(Colors.WHITE.value), str(game["away_score"]))
             graphics.DrawText(canvas, font, x + 40, 29,
-                              graphics.Color(*Colors.WHITE.value), str(game["home_score"]))
+                              _grb(Colors.WHITE.value), str(game["home_score"]))
 
             # status line — only on preferred games (they get a wider single-game view)
             if game["id"] in set(_preferred_games):
                 graphics.DrawText(canvas, font_small, x + 18, 20,
-                                  graphics.Color(*Colors.YELLOW.value), game["status"])
+                                  _grb(Colors.YELLOW.value), game["status"])
 
 # --- Preferred / stale game management ---
 def _update_preferred():
@@ -183,7 +190,7 @@ def draw_frame(canvas):
     if not _games:
         canvas.Clear()
         graphics.DrawText(canvas, font, 10, 22,
-                          graphics.Color(*Colors.RED.value), "No games today")
+                          _grb(Colors.RED.value), "No games today")
         return canvas
 
     # rebuild virtual canvas if data changed
