@@ -6,7 +6,10 @@ from PIL import Image, ImageDraw, ImageFont
 from rgbmatrix import RGBMatrix, RGBMatrixOptions
 from dotenv import load_dotenv
 from utils.vars import Colors, LOGO_DIR, ASSET_DIR
+
+# modes
 import modes.score as score_mode
+import modes.fantasy as fantasy_mode
 
 # --- Load environment vars ---
 load_dotenv()
@@ -182,7 +185,11 @@ def run():
         if supported_modes[current_mode] == "score":
             canvas_ref = score_mode.draw_frame(canvas)
             canvas = matrix.SwapOnVSync(canvas_ref)
-            ++times_ran
+        elif supported_modes[current_mode] == "fantasy":
+            canvas_ref = fantasy_mode.draw_frame(canvas)
+            canvas = matrix.SwapOnVSync(canvas_ref)
+
+        ++times_ran
 
 if __name__ == "__main__":
     run()
