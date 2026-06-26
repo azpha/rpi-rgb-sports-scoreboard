@@ -1,5 +1,5 @@
 import os
-from utils.data import LOGO_DIR
+from utils.vars import LOGO_DIR
 from PIL import Image
 
 logo_cache = {}

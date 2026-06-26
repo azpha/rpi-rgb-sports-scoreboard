@@ -5,8 +5,7 @@ from time import sleep
 from PIL import Image, ImageDraw, ImageFont
 from rgbmatrix import RGBMatrix, RGBMatrixOptions
 from dotenv import load_dotenv
-from utils.data import LOGO_DIR, ASSET_DIR
-from utils.colors import Colors
+from utils.vars import Colors, LOGO_DIR, ASSET_DIR
 import modes.score as score_mode
 
 # --- Load environment vars ---
