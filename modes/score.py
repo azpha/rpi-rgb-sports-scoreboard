@@ -155,7 +155,7 @@ def _draw_text_overlay(canvas, ordered, scroll_x):
             # status line — only on preferred games (they get a wider single-game view)
             if game["id"] in set(_preferred_games):
                 graphics.DrawText(canvas, font_small, x + 18, 20,
-                                  _rbg(Colors.YELLOW.value), game["status"])
+                                  _rbg(Colors.YELLOW.value), "\n".join(game["status"].split("-")))
 
 # --- Preferred / stale game management ---
 def _update_preferred():
