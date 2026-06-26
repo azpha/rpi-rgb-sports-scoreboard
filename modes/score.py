@@ -54,6 +54,7 @@ def _get_scores(sport, league):
             status = event["status"]["type"]["shortDetail"]
             result.append({
                 "league": league,
+                "venue": comp["venue"]["fullName"],
                 "away": away["team"]["abbreviation"].upper(),
                 "away_score": away["score"],
                 "home": home["team"]["abbreviation"].upper(),
@@ -164,11 +165,12 @@ def _draw_text_overlay(canvas, ordered, scroll_x):
                 date = game_status_split[0].strip()
                 time = game_status_split[1].strip()
 
-                graphics.DrawText(canvas, font_small, x + 65, 15,
+                graphics.DrawText(canvas, font_small, x + 60, 10,
                                   _rbg(Colors.YELLOW.value), date)
-                graphics.DrawText(canvas, font_small, x + 65, 25,
+                graphics.DrawText(canvas, font_small, x + 60, 20,
                                   _rbg(Colors.YELLOW.value), time)
-                print(game)
+                graphics.DrawText(canvas, font_small, x + 60, 30,
+                                  _rbg(Colors.YELLOW.value), game["venue"])
             else:
                 graphics.DrawText(canvas, font_small, x + 65, 20,
                                   _rbg(Colors.YELLOW.value), game["status"])
