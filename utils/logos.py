@@ -32,4 +32,4 @@ def draw_logo(canvas, img, x, y):
         for py in range(img.height):
             # FIX: unpack as RGB (load_logo guarantees RGB now)
             r, g, b = img.getpixel((px, py))
-            canvas.SetPixel(x + px, y + py, r, b, g)  # bgr panels
+            canvas.SetPixel(x + px, y + py, b, g, r)  # bgr panels
