@@ -172,8 +172,7 @@ def _update_preferred():
     for game in _games:
         if (game["away"], game["league"]) in _preferred_teams or \
            (game["home"], game["league"]) in _preferred_teams:
-            if "Final" not in game["status"] and game["id"] not in _preferred_games:
-                _preferred_games.append(game["id"])
+            _preferred_games.append(game["id"])
 
 # --- Public draw_frame ---
 def draw_frame(canvas):
