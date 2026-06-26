@@ -171,7 +171,7 @@ def draw_pil_image(canvas, img):
 def run():
     global canvas
     times_ran = 0
-    supported_modes = ["score", "fantasy"]
+    supported_modes = ["fantasy", "score"]
     current_mode = 0
 
     while True:
