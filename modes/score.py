@@ -14,6 +14,7 @@ _preferred_teams = [
     ("BUF", "nhl"),
     ("TOR", "mlb"),
     ("LAL", "nba"),
+    ("NYY", "mlb")
 ]
 
 # Carousel scroll state
@@ -78,12 +79,10 @@ def _get_all_scores():
 def _ordered_games():
     preferred_ids = set(_preferred_games)
     preferred = [g for g in _games if g["id"] in preferred_ids]
-    others = [g for g in _games if g["id"] not in preferred_ids]
-    return preferred + others
+    return preferred
 
 # --- Render a single game slot into a PIL image at a given x offset ---
 def _render_game_to_pil(img, game, x_offset):
-    draw = ImageDraw.Draw(img)
     league = game["league"]
 
     # logos
