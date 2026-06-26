@@ -81,10 +81,13 @@ def _render_game_to_pil(img, game, x_offset):
     away_logo = logos.load_logo(league, game["away"])
     home_logo = logos.load_logo(league, game["home"])
     if away_logo:
-        # logos.load_logo returns an RGB PIL image — paste directly
-        img.paste(away_logo.resize((14, 14)), (x_offset, 0))
+        r, g, b = away_logo.split()
+        bgr_logo = Image.merge("RGB", (b, g, r))
+        img.paste(bgr_logo.resize((14, 14)), (x_offset, 0))
     if home_logo:
-        img.paste(home_logo.resize((14, 14)), (x_offset, 16))
+        r, g, b = home_logo.split()
+        bgr_logo = Image.merge("RGB", (b, g, r))
+        img.paste(bgr_logo.resize((14, 14)), (x_offset, 16))
 
     # divider on right edge (except last slot handled by wrapping)
     for row in range(PANEL_HEIGHT):
