@@ -129,8 +129,8 @@ def draw_text_overlay(canvas, ordered, scroll_x):
 def render_game(matrix, img, game, x_offset):
     league = game["league"]
 
-    away_logo = matrix.load_logo_to_image(league, game["away"])
-    home_logo = matrix.load_logo_to_image(league, game["home"])
+    away_logo = matrix.load_logo(league, game["away"])
+    home_logo = matrix.load_logo(league, game["home"])
     if away_logo:
         img.paste(away_logo.resize((14, 14)), (x_offset, 0))
     if home_logo:
