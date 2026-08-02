@@ -7,7 +7,13 @@ from vars import PANEL_HEIGHT, PANEL_WIDTH, GAME_WIDTH, DIVIDER_COLOR, Colors, f
 games = []
 last_fetch = 0
 preferred_games = []
-preferred_teams = []
+preferred_teams = [
+    ("BUF", "nfl"),
+    ("BUF", "nhl"),
+    ("TOR", "mlb"),
+    ("LAL", "nba"),
+    ("NYY", "mlb")
+]
 
 scroll_x = 0
 scroll_speed = 1
