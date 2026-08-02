@@ -26,8 +26,9 @@ def fetch_data():
     try:
         resp = requests.get("https://api.alexav.gg/v4/sports/fantasy", timeout=5)
         resp.raise_for_status()
+        data = resp.json()
 
-        for player in resp["team1"]["players"]:
+        for player in data["team1"]["players"]:
           players['team1'].append({
               "first_name": player['first_name'],
               "last_name": player['last_name'],
