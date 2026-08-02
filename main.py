@@ -17,4 +17,6 @@ def main():
       if canvas:
         scoreboard_matrix.canvas = scoreboard_matrix.matrix.SwapOnVSync(canvas)
 
+    sleep(0.5)
+
 main()
