@@ -76,9 +76,9 @@ def draw_text_overlay(canvas, players, scroll_x):
                               rbg(Colors.WHITE.value), player['position'])
 
             if player['injury_status'] and player['injury_body_part']:
-                graphics.DrawText(canvas, font_small, x + 35, 20,
-                                rbg(Colors.RED.value), str(player['injury_status']))
-                graphics.DrawText(canvas, font_super_small, x + 35, 25,
+                graphics.DrawText(canvas, font_small, x + 50, 25,
+                                rbg(Colors.RED.value), f"{str(player['injury_status'])} - ")
+                graphics.DrawText(canvas, font_super_small, x + 70, 25,
                                 rbg(Colors.RED.value), str(player["injury_body_part"]))
 
             # # if the time is shown it should be split between lines
