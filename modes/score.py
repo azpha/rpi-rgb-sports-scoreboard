@@ -191,9 +191,9 @@ def draw_frame(matrix):
     draw_text_overlay(matrix.canvas, ordered, scroll_x)
 
     # advance scroll every N ticks
-    _tick += 1
-    if _tick >= frames_per_tick:
-        _tick = 0
+    tick += 1
+    if tick >= frames_per_tick:
+        tick = 0
         next_x = scroll_x + scroll_speed
         if next_x >= total_scroll_width:
             matrix.next_slide("fantasy")
