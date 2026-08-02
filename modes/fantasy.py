@@ -38,7 +38,7 @@ def fetch_data():
               "injury_status": player['injury_status'],
               "injury_body_part": player['injury_body_part']
           })
-        for player in resp["team2"]["players"]:
+        for player in data["team2"]["players"]:
           players['team1'].append({
               "first_name": player['first_name'],
               "last_name": player['last_name'],
