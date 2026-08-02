@@ -1,12 +1,3 @@
-"""
-Dev-only preview tool: renders the fantasy card for two synthetic players
-(one healthy, one injured) to PNG files, without needing the actual
-LED matrix hardware or the `rgbmatrix` library.
-
-Run: python preview_fantasy_card.py
-Output: preview_healthy.png, preview_injured.png, preview_comparison.png
-(preview_comparison.png opens automatically)
-"""
 import os
 import sys
 import types
@@ -16,20 +7,41 @@ REPO_ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(REPO_ROOT))
 
 # --- stub out rgbmatrix so vars.py / modes/fantasy.py import cleanly on a dev machine ---
+from PIL import ImageFont
+
+_FONT_PATH_SIZES = {"4x6.bdf": 6, "5x7.bdf": 7, "7x13.bdf": 12, "9x18.bdf": 16}
+
+
+def _load_pil_font(px_size):
+    for candidate in (r"C:\Windows\Fonts\consola.ttf", r"C:\Windows\Fonts\cour.ttf"):
+        if os.path.exists(candidate):
+            try:
+                return ImageFont.truetype(candidate, px_size)
+            except Exception:
+                pass
+    return ImageFont.load_default()
+
+
 class _FakeFont:
+    def __init__(self):
+        self.size = 10
+        self.pil_font = _load_pil_font(self.size)
+
     def LoadFont(self, path):
-        pass
+        # real BDF files are named e.g. "5x7.bdf" / "7x13.bdf" / "9x18.bdf" -
+        # use that to pick a comparably-sized stand-in TTF for the preview
+        self.size = _FONT_PATH_SIZES.get(os.path.basename(path), 10)
+        self.pil_font = _load_pil_font(self.size)
 
 
 def _fake_draw_text(canvas, font, x, y, color, text):
     r, g, b = color
-    canvas.draw.text((x, y - 8), text, fill=(r, g, b))
-    return len(text) * 6
-
+    offset = getattr(font, "size", 10)
+    canvas.draw.text((x, y - offset), text, fill=(r, g, b), font=getattr(font, "pil_font", None))
+    return len(text) * (offset // 2 + 1)
 
 def _fake_color(r, g, b):
     return (r, g, b)
-
 
 _graphics_mod = types.ModuleType("rgbmatrix.graphics")
 _graphics_mod.Font = _FakeFont
@@ -47,7 +59,6 @@ from PIL import Image, ImageDraw
 import vars
 from modes import fantasy
 
-
 class FakeCanvas:
     def __init__(self, width, height):
         self.img = Image.new("RGB", (width, height), (0, 0, 0))
@@ -59,7 +70,6 @@ class FakeCanvas:
     def SetPixel(self, x, y, r, g, b):
         if 0 <= x < self.img.width and 0 <= y < self.img.height:
             self.img.putpixel((x, y), (r, g, b))
-
 
 class FakeMatrix:
     def __init__(self):
@@ -134,4 +144,4 @@ if __name__ == "__main__":
     combined_path = REPO_ROOT / "preview_comparison.png"
     combined.save(combined_path)
     print(f"Saved: {combined_path}")
-    combined.show()
+    # combined.show()

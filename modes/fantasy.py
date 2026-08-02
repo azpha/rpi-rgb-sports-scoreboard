@@ -2,7 +2,7 @@ import requests
 from PIL import Image
 from time import time
 from rgbmatrix import graphics
-from vars import PANEL_HEIGHT, PANEL_WIDTH, GAME_WIDTH, DIVIDER_COLOR, Colors, font, font_small
+from vars import PANEL_HEIGHT, PANEL_WIDTH, GAME_WIDTH, DIVIDER_COLOR, Colors, font, font_small, font_super_small
 
 players = {
     "team1": [],
@@ -31,7 +31,6 @@ def fetch_data():
 
         new_players = {"team1": [], "team2": []}
         for player in data["team1"]["players"]:
-          print(player)
           new_players['team1'].append({
               "first_name": player['first_name'],
               "last_name": player['last_name'],
@@ -42,7 +41,6 @@ def fetch_data():
               "injury_body_part": player.get('injury_body_part')
           })
         for player in data["team2"]["players"]:
-          print(player)
           new_players['team2'].append({
               "first_name": player['first_name'],
               "last_name": player['last_name'],
@@ -72,15 +70,15 @@ def draw_text_overlay(canvas, players, scroll_x):
             if x + GAME_WIDTH < 0 or x >= PANEL_WIDTH:
                 continue
 
-            graphics.DrawText(canvas, font_small, x + 35, 11,
+            graphics.DrawText(canvas, font, x + 35, 11,
                               rbg(Colors.WHITE.value), player['abbr_name'])
-            graphics.DrawText(canvas, font_small, x + 35, 27,
+            graphics.DrawText(canvas, font_small, x + 72, 11,
                               rbg(Colors.WHITE.value), player['position'])
 
             if player['injury_status'] and player['injury_body_part']:
-                graphics.DrawText(canvas, font, x + 40, 13,
+                graphics.DrawText(canvas, font_small, x + 35, 20,
                                 rbg(Colors.RED.value), str(player['injury_status']))
-                graphics.DrawText(canvas, font, x + 40, 29,
+                graphics.DrawText(canvas, font_super_small, x + 35, 25,
                                 rbg(Colors.RED.value), str(player["injury_body_part"]))
 
             # # if the time is shown it should be split between lines
