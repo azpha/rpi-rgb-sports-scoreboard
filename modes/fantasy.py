@@ -11,7 +11,7 @@ players = {
 last_fetch = 0
 
 scroll_x = 0
-scroll_speed = 5
+scroll_speed = 1
 frames_per_tick = 1
 tick = 0
 times_scrolled = 0

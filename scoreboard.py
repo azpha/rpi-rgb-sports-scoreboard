@@ -5,7 +5,7 @@ import vars
 
 class ScoreboardMatrix():
   logo_cache = {}
-  current_slide = "fantasy"
+  current_slide = "score"
   options = RGBMatrixOptions()
   options.rows = 32
   options.cols = 64
