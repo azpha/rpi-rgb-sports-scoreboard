@@ -37,7 +37,7 @@ def fetch_data():
               "abbr_name": f"{player['first_name'][0]}. {player['last_name']}",
               "position": player['position'],
               "team": player['team'],
-              "injury_status": player.get('injury_status'),
+              "injury_status": "Q" if player.get('injury_status') == "Questionable" else player.get('injury_status'),
               "injury_body_part": player.get('injury_body_part')
           })
         for player in data["team2"]["players"]:
@@ -47,7 +47,7 @@ def fetch_data():
               "abbr_name": f"{player['first_name'][0]}. {player['last_name']}",
               "position": player['position'],
               "team": player['team'],
-              "injury_status": player.get('injury_status'),
+              "injury_status": "Q" if player.get('injury_status') == "Questionable" else player.get('injury_status'),
               "injury_body_part": player.get('injury_body_part')
           })
 
@@ -70,9 +70,9 @@ def draw_text_overlay(canvas, players, scroll_x):
             if x + GAME_WIDTH < 0 or x >= PANEL_WIDTH:
                 continue
 
-            graphics.DrawText(canvas, font, x + 35, 11,
+            graphics.DrawText(canvas, font, x + 35, 15,
                               rbg(Colors.WHITE.value), player['abbr_name'])
-            graphics.DrawText(canvas, font_small, x + 72, 11,
+            graphics.DrawText(canvas, font_small, x + 35, 25,
                               rbg(Colors.WHITE.value), player['position'])
 
             if player['injury_status'] and player['injury_body_part']:
