@@ -74,11 +74,13 @@ def draw_text_overlay(canvas, players, scroll_x):
             graphics.DrawText(canvas, font_small, x + 35, 11,
                               rbg(Colors.WHITE.value), player['abbr_name'])
             graphics.DrawText(canvas, font_small, x + 35, 27,
-                              rbg(Colors.WHITE.value), player['team'])
-            # graphics.DrawText(canvas, font, x + 40, 13,
-            #                   rbg(Colors.WHITE.value), str(game["away_score"]))
-            # graphics.DrawText(canvas, font, x + 40, 29,
-            #                   rbg(Colors.WHITE.value), str(game["home_score"]))
+                              rbg(Colors.WHITE.value), player['position'])
+
+            if player['injury_status'] and player['injury_body_part']:
+                graphics.DrawText(canvas, font, x + 40, 13,
+                                rbg(Colors.RED.value), str(player['injury_status']))
+                graphics.DrawText(canvas, font, x + 40, 29,
+                                rbg(Colors.RED.value), str(player["injury_body_part"]))
 
             # # if the time is shown it should be split between lines
             # # if not, just display the status
