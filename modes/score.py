@@ -198,6 +198,8 @@ def draw_frame(matrix):
         blit_slice(matrix.canvas, virtual_canvas, scroll_x)
     draw_text_overlay(matrix.canvas, ordered, scroll_x)
 
+    print(tick, games, ordered)
+
     tick += 1
     if tick >= frames_per_tick:
         tick = 0
