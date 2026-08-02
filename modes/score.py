@@ -16,8 +16,8 @@ preferred_teams = [
 ]
 
 scroll_x = 0
-scroll_speed = 10
-frames_per_tick = 2
+scroll_speed = 1
+frames_per_tick = 1
 tick = 0
 times_scrolled = 0
 virtual_canvas = None
@@ -198,13 +198,10 @@ def draw_frame(matrix):
         blit_slice(matrix.canvas, virtual_canvas, scroll_x)
     draw_text_overlay(matrix.canvas, ordered, scroll_x)
 
-    print(tick)
-
     tick += 1
     if tick >= frames_per_tick:
         tick = 0
         next_x = scroll_x + scroll_speed
-        print(scroll_x, scroll_speed, next_x, total_scroll_width)
         if next_x >= total_scroll_width:
             scroll_x = 0
             tick = 0
