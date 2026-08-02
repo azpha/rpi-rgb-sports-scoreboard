@@ -36,8 +36,8 @@ def fetch_data():
               "abbr_name": f"{player['first_name'][0]}. {player['last_name']}",
               "position": player['position'],
               "team": player['team'],
-              "injury_status": player['injury_status'],
-              "injury_body_part": player['injury_body_part']
+              "injury_status": player.get('injury_status'),
+              "injury_body_part": player.get('injury_body_part')
           })
         for player in data["team2"]["players"]:
           print(player)
@@ -47,8 +47,8 @@ def fetch_data():
               "abbr_name": f"{player['first_name'][0]}. {player['last_name']}",
               "position": player['position'],
               "team": player['team'],
-              "injury_status": player['injury_status'],
-              "injury_body_part": player['injury_body_part']
+              "injury_status": player.get('injury_status'),
+              "injury_body_part": player.get('injury_body_part')
           })
 
           return players
