@@ -17,6 +17,7 @@ tick = 0
 times_scrolled = 0
 virtual_canvas = None
 virtual_dirty = True
+current_team = "team1"
 
 def rbg(color_tuple):
     r, g, b = color_tuple
@@ -41,7 +42,7 @@ def fetch_data():
           })
         for player in data["team2"]["players"]:
           print(player)
-          players['team1'].append({
+          players['team2'].append({
               "first_name": player['first_name'],
               "last_name": player['last_name'],
               "abbr_name": f"{player['first_name'][0]}. {player['last_name']}",
@@ -51,7 +52,7 @@ def fetch_data():
               "injury_body_part": player.get('injury_body_part')
           })
 
-          return players
+        return players
     except Exception as e:
         print(f"[fantasy] fetch error: {e}")
         return None
@@ -130,8 +131,7 @@ def blit_slice(canvas, pil_img, x_offset):
 
 def draw_frame(matrix):
     global players, last_fetch, virtual_canvas, virtual_dirty, scroll_x, tick
-    global total_players
-    current_team = "team1"
+    global total_players, current_team
     now = time()
 
     if now - last_fetch > 30 or not players['team1'] or not players['team2']:
@@ -170,9 +170,11 @@ def draw_frame(matrix):
 
             if current_team == "team1":
                 current_team = "team2"
+                virtual_dirty = True
                 return matrix.canvas
             else:
                 current_team = "team1"
+                virtual_dirty = True
                 return None
         scroll_x = next_x
 
