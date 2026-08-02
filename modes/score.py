@@ -55,17 +55,17 @@ def get_all_scores():
 
 def ordered_games():
     preferred_ids = set(preferred_games)
-    preferred = [g for g in _games if g["id"] in preferred_ids]
+    preferred = [g for g in games if g["id"] in preferred_ids]
     return preferred
 
 def update_preferred():
     for gid in list(preferred_games):
-        game = next((g for g in _games if g["id"] == gid), None)
+        game = next((g for g in games if g["id"] == gid), None)
         if game is None or "Final" in game["status"]:
             preferred_games.remove(gid)
 
     # add new matching games
-    for game in _games:
+    for game in games:
         if (game["away"], game["league"]) in preferred_teams or \
            (game["home"], game["league"]) in preferred_teams:
             preferred_games.append(game["id"])
