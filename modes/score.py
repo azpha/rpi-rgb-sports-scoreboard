@@ -1,130 +1,76 @@
 import requests
-import utils.logos as logos
 from PIL import Image
-from rgbmatrix import graphics
-from utils.vars import Colors, font, font_small, PANEL_WIDTH, PANEL_HEIGHT, GAME_WIDTH, DIVIDER_COLOR
 from time import time
+from rgbmatrix import graphics
+from vars import PANEL_HEIGHT, PANEL_WIDTH, GAME_WIDTH, DIVIDER_COLOR, Colors, font, font_small
 
-# --- State ---
-_games = []
-_last_fetch = 0
-_preferred_games = []
-_preferred_teams = [
-    ("BUF", "nfl"),
-    ("BUF", "nhl"),
-    ("TOR", "mlb"),
-    ("LAL", "nba"),
-    ("NYY", "mlb")
-]
+games = []
+last_fetch = 0
+preferred_games = []
+preferred_teams = []
 
-# Carousel scroll state
-_scroll_x = 0
-_scroll_speed = 1          # pixels per frame
-_frames_per_tick = 2       # how many main loop ticks per scroll step (lower = faster)
-_tick = 0
-_virtual_canvas = None     # PIL Image of the full wide render
-_virtual_dirty = True      # rebuild the virtual canvas on next frame
+scroll_x = 0
+scroll_speed = 1
+frames_per_tick = 2
+tick = 0
+times_scrolled = 0
+virtual_canvas = None
+virtual_dirty = True
 
-# --- Color helpers ---
-def _rbg(color_tuple):
-    """Convert an (R, G, B) tuple to a graphics.Color with G and B swapped
-    to correct for RBG panel channel ordering on Waveshare P2.5 panels.
-    Hardware channel order is (R, B, G) but the API expects (R, G, B),
-    so we swap G and B before passing values in."""
-    r, g, b = color_tuple
-    return graphics.Color(r, b, g)
+def get_scores(sport, league):
+  url = f"https://site.api.espn.com/apis/site/v2/sports/{sport}/{league}/scoreboard"
+  try:
+      resp = requests.get(url, timeout=5)
+      resp.raise_for_status()
+      result = []
+      for event in resp.json().get("events", []):
+          comp = event["competitions"][0]
+          teams = comp["competitors"]
+          home = next(t for t in teams if t["homeAway"] == "home")
+          away = next(t for t in teams if t["homeAway"] == "away")
+          status = event["status"]["type"]["shortDetail"]
+          result.append({
+              "league": league,
+              "venue": comp["venue"]["fullName"],
+              "away": away["team"]["abbreviation"].upper(),
+              "away_score": away["score"],
+              "home": home["team"]["abbreviation"].upper(),
+              "home_score": home["score"],
+              "status": status,
+              "id": event["id"],
+          })
+      return result
+  except Exception as e:
+      print(f"Fetch error ({league}): {e}")
+      return []
 
-# --- Fetch ---
-def _get_scores(sport, league):
-    url = f"https://site.api.espn.com/apis/site/v2/sports/{sport}/{league}/scoreboard"
-    try:
-        resp = requests.get(url, timeout=5)
-        resp.raise_for_status()
-        result = []
-        for event in resp.json().get("events", []):
-            comp = event["competitions"][0]
-            teams = comp["competitors"]
-            home = next(t for t in teams if t["homeAway"] == "home")
-            away = next(t for t in teams if t["homeAway"] == "away")
-            status = event["status"]["type"]["shortDetail"]
-            result.append({
-                "league": league,
-                "venue": comp["venue"]["fullName"],
-                "away": away["team"]["abbreviation"].upper(),
-                "away_score": away["score"],
-                "home": home["team"]["abbreviation"].upper(),
-                "home_score": home["score"],
-                "status": status,
-                "id": event["id"],
-            })
-        return result
-    except Exception as e:
-        print(f"Fetch error ({league}): {e}")
-        return []
-
-def _get_all_scores():
+def get_all_scores():
     print("fetching game scores from espn")
     result = []
-    result += _get_scores("hockey", "nhl")
-    result += _get_scores("football", "nfl")
-    result += _get_scores("basketball", "nba")
-    result += _get_scores("baseball", "mlb")
+    result += get_scores("hockey", "nhl")
+    result += get_scores("football", "nfl")
+    result += get_scores("basketball", "nba")
+    result += get_scores("baseball", "mlb")
     return result
 
-# --- Build ordered game list: preferred first, then rest ---
-def _ordered_games():
-    preferred_ids = set(_preferred_games)
+def ordered_games():
+    preferred_ids = set(preferred_games)
     preferred = [g for g in _games if g["id"] in preferred_ids]
     return preferred
 
-# --- Render a single game slot into a PIL image at a given x offset ---
-def _render_game_to_pil(img, game, x_offset):
-    league = game["league"]
+def update_preferred():
+    for gid in list(preferred_games):
+        game = next((g for g in _games if g["id"] == gid), None)
+        if game is None or "Final" in game["status"]:
+            preferred_games.remove(gid)
 
-    # logos
-    away_logo = logos.load_logo(league, game["away"])
-    home_logo = logos.load_logo(league, game["home"])
-    if away_logo:
-        img.paste(away_logo.resize((14, 14)), (x_offset, 0))
-    if home_logo:
-        img.paste(home_logo.resize((14, 14)), (x_offset, 16))
+    # add new matching games
+    for game in _games:
+        if (game["away"], game["league"]) in preferred_teams or \
+           (game["home"], game["league"]) in preferred_teams:
+            preferred_games.append(game["id"])
 
-    # divider on right edge (except last slot handled by wrapping)
-    for row in range(PANEL_HEIGHT):
-        img.putpixel((x_offset + GAME_WIDTH - 1, row), DIVIDER_COLOR)
-
-# --- Build the full virtual PIL canvas for all ordered games ---
-def _build_virtual_canvas():
-    ordered = _ordered_games()
-    if not ordered:
-        return None
-
-    # wide enough for all games, plus one extra copy at the end for seamless wrap
-    total_games = len(ordered)
-    total_width = GAME_WIDTH * (total_games + 4)  # +4 so wrap tail fills display
-    img = Image.new("RGB", (total_width, PANEL_HEIGHT), (0, 0, 0))
-
-    for i, game in enumerate(ordered * 2):  # duplicate for seamless wrap
-        if i >= total_games + 4:
-            break
-        _render_game_to_pil(img, game, i * GAME_WIDTH)
-
-    return img, total_games
-
-# --- Blit a 256-wide slice of the virtual canvas onto the rgbmatrix canvas ---
-def _blit_slice(canvas, pil_img, x_offset):
-    total_width = pil_img.width
-    for x in range(PANEL_WIDTH):
-        src_x = (x_offset + x) % total_width
-        for y in range(PANEL_HEIGHT):
-            r, g, b = pil_img.getpixel((src_x, y))
-            canvas.SetPixel(x, y, r, b, g)  # RBG panels: swap G and B
-
-# --- Draw text onto the virtual canvas using PIL (since rgbmatrix fonts need a real canvas) ---
-# We use rgbmatrix DrawText on the live canvas offset by -scroll_x for text only,
-# and PIL for logos/backgrounds. See draw_frame() for how these combine.
-
-def _draw_text_overlay(canvas, ordered, scroll_x):
+def draw_text_overlay(canvas, ordered, scroll_x):
     """Draw all game text onto the rgbmatrix canvas accounting for scroll offset."""
     total_width = GAME_WIDTH * len(ordered)
 
@@ -140,13 +86,13 @@ def _draw_text_overlay(canvas, ordered, scroll_x):
                 continue
 
             graphics.DrawText(canvas, font_small, x + 18, 11,
-                              _rbg(Colors.RED.value), game["away"])
+                              Colors.RED.value, game["away"])
             graphics.DrawText(canvas, font_small, x + 18, 27,
-                              _rbg(Colors.WHITE.value), game["home"])
+                              Colors.WHITE.value, game["home"])
             graphics.DrawText(canvas, font, x + 40, 13,
-                              _rbg(Colors.WHITE.value), str(game["away_score"]))
+                              Colors.WHITE.value, str(game["away_score"]))
             graphics.DrawText(canvas, font, x + 40, 29,
-                              _rbg(Colors.WHITE.value), str(game["home_score"]))
+                              Colors.WHITE.value, str(game["home_score"]))
 
             # status line — only on preferred games (they get a wider single-game view)
             # if game["id"] in set(_preferred_games):
@@ -161,77 +107,96 @@ def _draw_text_overlay(canvas, ordered, scroll_x):
                 time = game_status_split[1].strip()
 
                 graphics.DrawText(canvas, font_small, x + 60, 10,
-                                  _rbg(Colors.YELLOW.value), date)
+                                  Colors.YELLOW.value, date)
                 graphics.DrawText(canvas, font_small, x + 60, 20,
-                                  _rbg(Colors.YELLOW.value), time)
+                                  Colors.YELLOW.value, time)
                 graphics.DrawText(canvas, font_small, x + 60, 30,
-                                  _rbg(Colors.YELLOW.value), game["venue"])
+                                  Colors.YELLOW.value, game["venue"])
             else:
                 graphics.DrawText(canvas, font_small, x + 65, 20,
-                                  _rbg(Colors.YELLOW.value), game["status"])
+                                  Colors.YELLOW.value, game["status"])
 
+def render_game(matrix, img, game, x_offset):
+    league = game["league"]
 
+    away_logo = matrix.load_logo_to_image(league, game["away"])
+    home_logo = matrix.load_logo_to_image(league, game["home"])
+    if away_logo:
+        img.paste(away_logo.resize((14, 14)), (x_offset, 0))
+    if home_logo:
+        img.paste(home_logo.resize((14, 14)), (x_offset, 16))
 
-# --- Preferred / stale game management ---
-def _update_preferred():
-    preferred_id_set = set(_preferred_games)
+    # divider on right edge (except last slot handled by wrapping)
+    for row in range(PANEL_HEIGHT):
+        img.putpixel((x_offset + GAME_WIDTH - 1, row), DIVIDER_COLOR)
 
-    # remove finished or gone games
-    active_ids = {g["id"] for g in _games}
-    for gid in list(_preferred_games):
-        game = next((g for g in _games if g["id"] == gid), None)
-        if game is None or "Final" in game["status"]:
-            _preferred_games.remove(gid)
+def build_canvas(matrix):
+    ordered = ordered_games()
+    if not ordered:
+        return None
 
-    # add new matching games
-    for game in _games:
-        if (game["away"], game["league"]) in _preferred_teams or \
-           (game["home"], game["league"]) in _preferred_teams:
-            _preferred_games.append(game["id"])
+    total_games = len(ordered)
+    total_width = GAME_WIDTH * (total_games + 4)
+    img = Image.new("RGB", (total_width, PANEL_HEIGHT), (0,0,0))
 
-# --- Public draw_frame ---
-def draw_frame(canvas):
-    global _games, _last_fetch, _virtual_canvas, _virtual_dirty, _scroll_x, _tick
+    for i, game in enumerate(ordered * 2):
+        if i >= total_games + 4:
+            break
+        render_game(matrix, img, game, i * GAME_WIDTH)
 
+    return img, total_games
+
+def blit_slice(canvas, pil_img, x_offset):
+    total_width = pil_img.width
+    for x in range(PANEL_WIDTH):
+        src_x = (x_offset + x) % total_width
+        for y in range(PANEL_HEIGHT):
+            r, g, b = pil_img.getpixel((src_x, y))
+            canvas.SetPixel(x, y, r, b, g)
+
+def draw_frame(matrix):
+    global games, last_fetch, virtual_canvas, virtual_dirty, scroll_x, tick
     now = time()
 
-    # refresh scores every 30s
-    if now - _last_fetch > 30 or not _games:
-        _games = _get_all_scores()
-        _last_fetch = now
-        _update_preferred()
-        _virtual_dirty = True
+    if now - last_fetch > 30 or not games:
+        games = get_all_scores()
+        last_fetch = now
+        update_preferred()
+        virtual_dirty = True
 
-    if not _games:
-        canvas.Clear()
-        graphics.DrawText(canvas, font, 10, 22,
-                          _rbg(Colors.RED.value), "No games today")
-        return canvas
+    if not games:
+        matrix.canvas.Clear()
+        graphics.DrawText(matrix.canvas, font, 10, 22,
+                          Colors.RED.value, "No games today")
+        return matrix.canvas
 
     # rebuild virtual canvas if data changed
-    if _virtual_dirty or _virtual_canvas is None:
-        result = _build_virtual_canvas()
+    if virtual_dirty or virtual_canvas is None:
+        result = build_canvas()
         if result:
-            _virtual_canvas, _total_games = result
-        _virtual_dirty = False
-        _scroll_x = 0
+            virtual_canvas, total_games = result
+        virtual_dirty = False
+        scroll_x = 0
 
-    ordered = _ordered_games()
+    ordered = ordered_games()
     total_scroll_width = GAME_WIDTH * len(ordered)
 
-    canvas.Clear()
+    matrix.canvas.Clear()
 
     # blit the PIL image slice (logos + dividers + backgrounds)
-    if _virtual_canvas:
-        _blit_slice(canvas, _virtual_canvas, _scroll_x)
+    if virtual_canvas:
+        blit_slice(matrix.canvas, virtual_canvas, scroll_x)
 
     # draw text on top via rgbmatrix (handles fonts correctly)
-    _draw_text_overlay(canvas, ordered, _scroll_x)
+    draw_text_overlay(matrix.canvas, ordered, scroll_x)
 
     # advance scroll every N ticks
     _tick += 1
-    if _tick >= _frames_per_tick:
+    if _tick >= frames_per_tick:
         _tick = 0
-        _scroll_x = (_scroll_x + _scroll_speed) % total_scroll_width
+        next_x = scroll_x + scroll_speed
+        if next_x >= total_scroll_width:
+            matrix.next_slide("fantasy")
+        scroll_x = next_x % total_scroll_width
 
-    return canvas
+    return matrix.canvas
