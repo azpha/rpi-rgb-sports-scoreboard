@@ -151,7 +151,7 @@ def draw_frame(matrix):
 
     matrix.canvas.Clear()
 
-    if not len(players[current_team] > 0):
+    if not len(players[current_team]) > 0:
         graphics.DrawText(matrix.canvas, font, 10, 22, 
                           rbg(Colors.RED.value), 
                           "No players found")
