@@ -17,6 +17,10 @@ times_scrolled = 0
 virtual_canvas = None
 virtual_dirty = True
 
+def rbg(color_tuple):
+    r, g, b = color_tuple
+    return graphics.Color(r, b, g)
+
 def get_scores(sport, league):
   url = f"https://site.api.espn.com/apis/site/v2/sports/{sport}/{league}/scoreboard"
   try:
@@ -86,13 +90,13 @@ def draw_text_overlay(canvas, ordered, scroll_x):
                 continue
 
             graphics.DrawText(canvas, font_small, x + 18, 11,
-                              Colors.RED.value, game["away"])
+                              rbg(Colors.RED.value), game["away"])
             graphics.DrawText(canvas, font_small, x + 18, 27,
-                              Colors.WHITE.value, game["home"])
+                              rbg(Colors.WHITE.value), game["home"])
             graphics.DrawText(canvas, font, x + 40, 13,
-                              Colors.WHITE.value, str(game["away_score"]))
+                              rbg(Colors.WHITE.value), str(game["away_score"]))
             graphics.DrawText(canvas, font, x + 40, 29,
-                              Colors.WHITE.value, str(game["home_score"]))
+                              rbg(Colors.WHITE.value), str(game["home_score"]))
 
             # status line — only on preferred games (they get a wider single-game view)
             # if game["id"] in set(_preferred_games):
@@ -107,14 +111,14 @@ def draw_text_overlay(canvas, ordered, scroll_x):
                 time = game_status_split[1].strip()
 
                 graphics.DrawText(canvas, font_small, x + 60, 10,
-                                  Colors.YELLOW.value, date)
+                                rbg(Colors.YELLOW.value), date)
                 graphics.DrawText(canvas, font_small, x + 60, 20,
-                                  Colors.YELLOW.value, time)
+                                rbg(Colors.YELLOW.value), time)
                 graphics.DrawText(canvas, font_small, x + 60, 30,
-                                  Colors.YELLOW.value, game["venue"])
+                                rbg(Colors.YELLOW.value), game["venue"])
             else:
                 graphics.DrawText(canvas, font_small, x + 65, 20,
-                                  Colors.YELLOW.value, game["status"])
+                                rbg(Colors.YELLOW.value), game["status"])
 
 def render_game(matrix, img, game, x_offset):
     league = game["league"]
@@ -178,7 +182,7 @@ def draw_frame(matrix):
 
     if not ordered:
         graphics.DrawText(matrix.canvas, font, 10, 22,
-                          Colors.RED.value, "No games today")
+                          rbg(Colors.RED.value), "No games today")
         scroll_x = tick = 0
         return matrix.canvas
 
