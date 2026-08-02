@@ -13,6 +13,7 @@ def main():
       canvas = score.draw_frame(scoreboard_matrix)
       print(canvas)
       if not canvas:
+        scoreboard_matrix.canvas = scoreboard_matrix.canvas.Clear()
         scoreboard_matrix.current_slide = "fantasy"
       if canvas:
         scoreboard_matrix.canvas = scoreboard_matrix.matrix.SwapOnVSync(canvas)
