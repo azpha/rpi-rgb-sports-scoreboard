@@ -164,7 +164,7 @@ def draw_frame(matrix):
         update_preferred()
         virtual_dirty = True
 
-    if not games:
+    if not ordered:
         matrix.canvas.Clear()
         graphics.DrawText(matrix.canvas, font, 10, 22,
                           Colors.RED.value, "No games today")
