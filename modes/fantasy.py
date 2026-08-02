@@ -116,7 +116,7 @@ def build_canvas(matrix, team):
     total_width = GAME_WIDTH * (total_players + 4)
     img = Image.new("RGB", (total_width, PANEL_HEIGHT), (0,0,0))
 
-    for i, player in enumerate(total_players * 2):
+    for i, player in enumerate(players[team] * 2):
         if i >= total_players + 4:
             break
         render_player(matrix, img, player, i * GAME_WIDTH)
