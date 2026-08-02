@@ -183,7 +183,7 @@ def draw_frame(matrix):
             virtual_dirty = False
             scroll_x = 0
 
-    ordered = ordered_games()          # after the fetch, not before
+    ordered = ordered_games()
     matrix.canvas.Clear()
 
     if not ordered:
@@ -198,7 +198,7 @@ def draw_frame(matrix):
         blit_slice(matrix.canvas, virtual_canvas, scroll_x)
     draw_text_overlay(matrix.canvas, ordered, scroll_x)
 
-    print(tick, games, ordered)
+    print(tick)
 
     tick += 1
     if tick >= frames_per_tick:
