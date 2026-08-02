@@ -29,9 +29,10 @@ def fetch_data():
         resp.raise_for_status()
         data = resp.json()
 
+        new_players = {"team1": [], "team2": []}
         for player in data["team1"]["players"]:
           print(player)
-          players['team1'].append({
+          new_players['team1'].append({
               "first_name": player['first_name'],
               "last_name": player['last_name'],
               "abbr_name": f"{player['first_name'][0]}. {player['last_name']}",
@@ -42,7 +43,7 @@ def fetch_data():
           })
         for player in data["team2"]["players"]:
           print(player)
-          players['team2'].append({
+          new_players['team2'].append({
               "first_name": player['first_name'],
               "last_name": player['last_name'],
               "abbr_name": f"{player['first_name'][0]}. {player['last_name']}",
@@ -52,7 +53,7 @@ def fetch_data():
               "injury_body_part": player.get('injury_body_part')
           })
 
-        return players
+        return new_players
     except Exception as e:
         print(f"[fantasy] fetch error: {e}")
         return None
@@ -146,7 +147,6 @@ def draw_frame(matrix):
         if result:
             virtual_canvas, total_players = result
             virtual_dirty = False
-            scroll_x = 0
 
     matrix.canvas.Clear()
 
