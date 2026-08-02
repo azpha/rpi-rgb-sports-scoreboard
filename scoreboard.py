@@ -20,22 +20,26 @@ class ScoreboardMatrix():
   matrix = RGBMatrix(options=options)
   canvas = matrix.CreateFrameCanvas()
 
-  def load_logo_to_image(self, league, abbr, width, height, x_offset, y_offset):
-    key = f"{league}_{abbr}.png"
-    logo_path = os.path.join(vars.LOGOS_DIR, key)
-    if not os.path.exists(logo_path):
-      return None
-    
-    if key in self.logo_cache:
-      loaded_image = self.logo_cache[key]
-    else:
-      loaded_image = Image.open(logo_path).convert("RGB")
-      self.logo_cache[key] = loaded_image
-    
-    image = Image.new("RGB", (width, height), (0,0,0))
-    image.paste(loaded_image.resize((width, height), (x_offset, y_offset)))
+  def load_logo(self, league, abbr):
+      key = f"{league}_{abbr}"
+      if key in self.logo_cache:
+          return self.logo_cache[key]
 
-    return image
+      path = os.path.join(vars.LOGO_DIR, f"{key}.png")
+      if not os.path.exists(path):
+          print(f"Logo not found: {path}")
+          self.logo_cache[key] = None
+          return None
+
+      try:
+          # FIX: convert to RGB here so draw_logo always gets 3-channel pixels
+          img = Image.open(path).convert("RGB")
+          self.logo_cache[key] = img
+          return img
+      except Exception as e:
+          print(f"Error loading logo {key}: {e}")
+          self.logo_cache[key] = None
+          return None
 
   def iterate_slide_count(self):
     self.slide_count += 1
