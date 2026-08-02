@@ -11,6 +11,8 @@ def main():
     print(scoreboard_matrix.current_slide)
     if scoreboard_matrix.current_slide == "score":
       canvas = score.draw_frame(scoreboard_matrix)
+      if not canvas:
+        scoreboard_matrix.current_slide = "fantasy"
       if canvas:
         scoreboard_matrix.canvas = scoreboard_matrix.matrix.SwapOnVSync(canvas)
 

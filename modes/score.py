@@ -207,8 +207,7 @@ def draw_frame(matrix):
         if next_x >= total_scroll_width:
             scroll_x = 0
             tick = 0
-            matrix.next_slide("fantasy")
-            return matrix.canvas
+            return None
         scroll_x = next_x
 
     return matrix.canvas

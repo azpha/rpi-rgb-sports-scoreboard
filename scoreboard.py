@@ -6,7 +6,6 @@ import vars
 class ScoreboardMatrix():
   logo_cache = {}
   current_slide = "score"
-  slide_count = 0
   options = RGBMatrixOptions()
   options.rows = 32
   options.cols = 64
@@ -40,12 +39,5 @@ class ScoreboardMatrix():
           print(f"Error loading logo {key}: {e}")
           self.logo_cache[key] = None
           return None
-
-  def iterate_slide_count(self):
-    self.slide_count += 1
-
-  def next_slide(self, slide_name):
-    self.slide_count = 0
-    self.current_slide = slide_name
 
   
