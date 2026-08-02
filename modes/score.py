@@ -16,7 +16,7 @@ preferred_teams = [
 ]
 
 scroll_x = 0
-scroll_speed = 1
+scroll_speed = 10
 frames_per_tick = 2
 tick = 0
 times_scrolled = 0
