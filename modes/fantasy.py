@@ -70,9 +70,9 @@ def draw_text_overlay(canvas, players, scroll_x):
             if x + GAME_WIDTH < 0 or x >= PANEL_WIDTH:
                 continue
 
-            graphics.DrawText(canvas, font_small, x + 18, 11,
+            graphics.DrawText(canvas, font_small, x + 35, 11,
                               rbg(Colors.WHITE.value), player['abbr_name'])
-            graphics.DrawText(canvas, font_small, x + 18, 27,
+            graphics.DrawText(canvas, font_small, x + 35, 27,
                               rbg(Colors.WHITE.value), player['team'])
             # graphics.DrawText(canvas, font, x + 40, 13,
             #                   rbg(Colors.WHITE.value), str(game["away_score"]))
