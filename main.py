@@ -9,7 +9,9 @@ scoreboard_matrix = ScoreboardMatrix()
 def main():
   while True:
     if scoreboard_matrix.current_slide == "score":
-      score.draw_frame(scoreboard_matrix)
+      canvas = score.draw_frame(scoreboard_matrix)
+      if canvas:
+        scoreboard_matrix.canvas = scoreboard_matrix.matrix.SwapOnVSync(canvas)
 
     sleep(2)
 
