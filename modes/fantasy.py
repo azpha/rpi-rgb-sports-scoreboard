@@ -108,6 +108,7 @@ def render_player(matrix, img, player, x_offset):
         img.putpixel((x_offset + GAME_WIDTH - 1, row), DIVIDER_COLOR)
 
 def build_canvas(matrix, team):
+    print(players)
     total_players = len(players[team])
     total_width = GAME_WIDTH * (total_players + 4)
     img = Image.new("RGB", (total_width, PANEL_HEIGHT), (0,0,0))
