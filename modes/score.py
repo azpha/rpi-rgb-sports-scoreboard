@@ -204,6 +204,7 @@ def draw_frame(matrix):
     if tick >= frames_per_tick:
         tick = 0
         next_x = scroll_x + scroll_speed
+        print(scroll_x, scroll_speed, next_x, total_scroll_width)
         if next_x >= total_scroll_width:
             scroll_x = 0
             tick = 0
