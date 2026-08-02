@@ -156,7 +156,7 @@ def blit_slice(canvas, pil_img, x_offset):
 
 def draw_frame(matrix):
     global games, last_fetch, virtual_canvas, virtual_dirty, scroll_x, tick
-    ordered = ordered_games()
+    global total_games
     now = time()
 
     if now - last_fetch > 30 or not games:
@@ -165,38 +165,38 @@ def draw_frame(matrix):
         update_preferred()
         virtual_dirty = True
 
-    if not games:
-        matrix.canvas.Clear()
-        graphics.DrawText(matrix.canvas, font, 10, 22,
-                          Colors.RED.value, "No games today")
-        return matrix.canvas
-
     # rebuild virtual canvas if data changed
     if virtual_dirty or virtual_canvas is None:
         result = build_canvas(matrix)
         if result:
             virtual_canvas, total_games = result
-        virtual_dirty = False
-        scroll_x = 0
+            virtual_dirty = False
+            scroll_x = 0
+
+    ordered = ordered_games()          # after the fetch, not before
+    matrix.canvas.Clear()
+
+    if not ordered:
+        graphics.DrawText(matrix.canvas, font, 10, 22,
+                          Colors.RED.value, "No games today")
+        scroll_x = tick = 0
+        return matrix.canvas
 
     total_scroll_width = GAME_WIDTH * len(ordered)
 
-    matrix.canvas.Clear()
-
-    # blit the PIL image slice (logos + dividers + backgrounds)
     if virtual_canvas:
         blit_slice(matrix.canvas, virtual_canvas, scroll_x)
-
-    # draw text on top via rgbmatrix (handles fonts correctly)
     draw_text_overlay(matrix.canvas, ordered, scroll_x)
 
-    # advance scroll every N ticks
     tick += 1
     if tick >= frames_per_tick:
         tick = 0
         next_x = scroll_x + scroll_speed
         if next_x >= total_scroll_width:
+            scroll_x = 0
+            tick = 0
             matrix.next_slide("fantasy")
-        scroll_x = next_x % total_scroll_width
+            return matrix.canvas
+        scroll_x = next_x
 
     return matrix.canvas
