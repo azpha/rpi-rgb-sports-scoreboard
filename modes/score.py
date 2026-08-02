@@ -156,6 +156,7 @@ def blit_slice(canvas, pil_img, x_offset):
 
 def draw_frame(matrix):
     global games, last_fetch, virtual_canvas, virtual_dirty, scroll_x, tick
+    ordered = ordered_games()
     now = time()
 
     if now - last_fetch > 30 or not games:
@@ -164,7 +165,7 @@ def draw_frame(matrix):
         update_preferred()
         virtual_dirty = True
 
-    if not ordered:
+    if not games:
         matrix.canvas.Clear()
         graphics.DrawText(matrix.canvas, font, 10, 22,
                           Colors.RED.value, "No games today")
@@ -178,7 +179,6 @@ def draw_frame(matrix):
         virtual_dirty = False
         scroll_x = 0
 
-    ordered = ordered_games()
     total_scroll_width = GAME_WIDTH * len(ordered)
 
     matrix.canvas.Clear()
