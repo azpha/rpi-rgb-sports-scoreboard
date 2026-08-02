@@ -172,7 +172,7 @@ def draw_frame(matrix):
 
     # rebuild virtual canvas if data changed
     if virtual_dirty or virtual_canvas is None:
-        result = build_canvas()
+        result = build_canvas(matrix)
         if result:
             virtual_canvas, total_games = result
         virtual_dirty = False
