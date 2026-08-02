@@ -99,12 +99,9 @@ def draw_text_overlay(canvas, players, scroll_x):
 def render_player(matrix, img, player, x_offset):
     league = "nfl"
 
-    away_logo = matrix.load_logo(league, player['team'])
-    home_logo = matrix.load_logo(league, player['team'])
-    if away_logo:
-        img.paste(away_logo.resize((14, 14)), (x_offset, 0))
-    if home_logo:
-        img.paste(home_logo.resize((14, 14)), (x_offset, 16))
+    team_logo = matrix.load_logo(league, player['team'])
+    if team_logo:
+        img.paste(team_logo.resize((28, 28)), (x_offset, 0))
 
     # divider on right edge (except last slot handled by wrapping)
     for row in range(PANEL_HEIGHT):
