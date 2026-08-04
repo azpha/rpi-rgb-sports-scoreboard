@@ -135,16 +135,24 @@ def draw_text_overlay(canvas, players, scroll_x, dest_x=0, width=PANEL_WIDTH):
 
             x += dest_x
 
-            graphics.DrawText(canvas, font, x + 35, 15,
-                              rbg(Colors.WHITE.value), player['abbr_name'])
-            graphics.DrawText(canvas, font_small, x + 35, 25,
-                              rbg(Colors.WHITE.value), player['position'])
+            name_x = x + 35
+            if name_x >= dest_x:
+                graphics.DrawText(canvas, font, name_x, 15,
+                                  rbg(Colors.WHITE.value), player['abbr_name'])
+            pos_x = x + 35
+            if pos_x >= dest_x:
+                graphics.DrawText(canvas, font_small, pos_x, 25,
+                                  rbg(Colors.WHITE.value), player['position'])
 
             if player['injury_status'] and player['injury_body_part']:
-                graphics.DrawText(canvas, font_small, x + 50, 25,
-                                rbg(Colors.RED.value), f"{str(player['injury_status'])} - ")
-                graphics.DrawText(canvas, font_super_small, x + 70, 25,
-                                rbg(Colors.RED.value), str(player["injury_body_part"]))
+                status_x = x + 50
+                if status_x >= dest_x:
+                    graphics.DrawText(canvas, font_small, status_x, 25,
+                                    rbg(Colors.RED.value), f"{str(player['injury_status'])} - ")
+                part_x = x + 70
+                if part_x >= dest_x:
+                    graphics.DrawText(canvas, font_super_small, part_x, 25,
+                                    rbg(Colors.RED.value), str(player["injury_body_part"]))
 
             # # if the time is shown it should be split between lines
             # # if not, just display the status
