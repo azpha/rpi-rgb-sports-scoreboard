@@ -14,9 +14,14 @@ team_info = {
 }
 last_fetch = 0
 
-STATIC_CARD_WIDTH = GAME_WIDTH
+STATIC_CARD_WIDTH = 96
 SCROLL_REGION_X = STATIC_CARD_WIDTH
 SCROLL_REGION_WIDTH = PANEL_WIDTH - STATIC_CARD_WIDTH
+
+# BDF fonts here are fixed-width bitmap fonts named "<char_width>x<char_height>.bdf"
+SMALL_CHAR_WIDTH = 5   # 5x7.bdf
+SUPER_SMALL_CHAR_WIDTH = 4  # 4x6.bdf
+STATIC_CARD_MARGIN = 4
 
 scroll_x = 0
 scroll_speed = 1
@@ -63,6 +68,30 @@ def fetch_data():
         print(f"[fantasy] fetch error: {e}")
         return None, None
 
+def _wrap_to_width(text, char_width, max_width, max_lines):
+    """Word-wrap text into at most max_lines lines that each fit within
+    max_width pixels, assuming a fixed-width font. Overlong single words are
+    hard-truncated so nothing ever overflows the given width."""
+    max_chars = max(1, max_width // char_width)
+
+    lines = []
+    current = ""
+    for word in text.split(" "):
+        if len(word) > max_chars:
+            word = word[:max_chars]
+        trial = f"{current} {word}".strip()
+        if len(trial) > max_chars and current:
+            lines.append(current)
+            current = word
+        else:
+            current = trial
+        if len(lines) >= max_lines:
+            break
+    if current and len(lines) < max_lines:
+        lines.append(current)
+
+    return [line[:max_chars] for line in lines[:max_lines]]
+
 def draw_static_card(canvas, team):
     """Draw a fixed, non-scrolling card for the given team into the leftmost
     STATIC_CARD_WIDTH pixels of the canvas."""
@@ -70,30 +99,20 @@ def draw_static_card(canvas, team):
     name = info.get("name") or team.upper()
     points = info.get("points")
 
-    label = "TEAM 1" if team == "team1" else "TEAM 2"
-    graphics.DrawText(canvas, font_small, 4, 8, rbg(Colors.YELLOW.value), label)
+    text_width = STATIC_CARD_WIDTH - STATIC_CARD_MARGIN - 3  # stay clear of the divider
 
-    # wrap the team name across up to 2 lines to fit the card width
-    words = name.split(" ")
-    lines = []
-    current = ""
-    for word in words:
-        trial = f"{current} {word}".strip()
-        if len(trial) > 14 and current:
-            lines.append(current)
-            current = word
-        else:
-            current = trial
-    if current:
-        lines.append(current)
+    label = "TEAM 1" if team == "team1" else "TEAM 2"
+    graphics.DrawText(canvas, font_small, STATIC_CARD_MARGIN, 8, rbg(Colors.YELLOW.value), label)
+
+    name_lines = _wrap_to_width(name, SUPER_SMALL_CHAR_WIDTH, text_width, max_lines=2)
 
     y = 17
-    for line in lines[:2]:
-        graphics.DrawText(canvas, font_super_small, 4, y, rbg(Colors.WHITE.value), line)
+    for line in name_lines:
+        graphics.DrawText(canvas, font_super_small, STATIC_CARD_MARGIN, y, rbg(Colors.WHITE.value), line)
         y += 7
 
     if points is not None:
-        graphics.DrawText(canvas, font_small, 4, 30, rbg(Colors.RED.value), f"{points:.1f}")
+        graphics.DrawText(canvas, font_small, STATIC_CARD_MARGIN, 30, rbg(Colors.RED.value), f"{points:.1f}")
 
     # divider on right edge of the static card
     r, g, b = DIVIDER_COLOR
