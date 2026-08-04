@@ -22,6 +22,7 @@ tick = 0
 times_scrolled = 0
 virtual_canvas = None
 virtual_dirty = True
+last_ordered_ids = None
 
 def rbg(color_tuple):
     r, g, b = color_tuple
@@ -76,8 +77,9 @@ def update_preferred():
 
     # add new matching games
     for game in games:
-        if (game["away"], game["league"]) in preferred_teams or \
-           (game["home"], game["league"]) in preferred_teams:
+        if game["id"] not in preferred_games and \
+           ((game["away"], game["league"]) in preferred_teams or
+            (game["home"], game["league"]) in preferred_teams):
             preferred_games.append(game["id"])
 
 def draw_text_overlay(canvas, ordered, scroll_x):
@@ -166,14 +168,18 @@ def blit_slice(canvas, pil_img, x_offset):
 
 def draw_frame(matrix):
     global games, last_fetch, virtual_canvas, virtual_dirty, scroll_x, tick
-    global total_games
+    global total_games, last_ordered_ids
     now = time()
 
     if now - last_fetch > 30 or not games:
         games = get_all_scores()
         last_fetch = now
         update_preferred()
-        virtual_dirty = True
+
+        ordered_ids = [g["id"] for g in ordered_games()]
+        if ordered_ids != last_ordered_ids:
+            last_ordered_ids = ordered_ids
+            virtual_dirty = True
 
     # rebuild virtual canvas if data changed
     if virtual_dirty or virtual_canvas is None:
