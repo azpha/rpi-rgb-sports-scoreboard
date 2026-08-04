@@ -34,7 +34,8 @@ def _pil_font(bdf_filename):
     instead of being drawn separately onto the live matrix canvas."""
     if bdf_filename not in _pil_font_cache:
         bdf_path = os.path.join(ASSET_DIR, "fonts", bdf_filename)
-        cache_base = os.path.join(tempfile.gettempdir(), f"scoreboard_pilfont_{bdf_filename}")
+        name = os.path.splitext(bdf_filename)[0]
+        cache_base = os.path.join(tempfile.gettempdir(), f"scoreboard_pilfont_{name}")
         if not os.path.exists(cache_base + ".pil"):
             with open(bdf_path, "rb") as f:
                 BdfFontFile.BdfFontFile(f).save(cache_base)
