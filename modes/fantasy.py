@@ -19,6 +19,7 @@ SCROLL_REGION_X = STATIC_CARD_WIDTH
 SCROLL_REGION_WIDTH = PANEL_WIDTH - STATIC_CARD_WIDTH
 
 # BDF fonts here are fixed-width bitmap fonts named "<char_width>x<char_height>.bdf"
+NAME_CHAR_WIDTH = 7  # 7x13.bdf
 SMALL_CHAR_WIDTH = 5   # 5x7.bdf
 SUPER_SMALL_CHAR_WIDTH = 4  # 4x6.bdf
 STATIC_CARD_MARGIN = 4
@@ -119,6 +120,20 @@ def draw_static_card(canvas, team):
     for row in range(PANEL_HEIGHT):
         canvas.SetPixel(STATIC_CARD_WIDTH - 1, row, r, b, g)
 
+def _clip_left(text, x, char_width, boundary):
+    """Trim whole characters off the left of text that fall entirely before
+    boundary, so a string scrolling left erases character-by-character at the
+    boundary instead of vanishing all at once. Returns (text, x) to draw, or
+    (None, x) if nothing is left to show."""
+    if x >= boundary:
+        return text, x
+    if not text:
+        return None, x
+    hidden = -(-(boundary - x) // char_width)  # ceil division
+    if hidden >= len(text):
+        return None, x
+    return text[hidden:], x + hidden * char_width
+
 def draw_text_overlay(canvas, players, scroll_x, dest_x=0, width=PANEL_WIDTH):
     total_width = GAME_WIDTH * len(players)
 
@@ -135,24 +150,28 @@ def draw_text_overlay(canvas, players, scroll_x, dest_x=0, width=PANEL_WIDTH):
 
             x += dest_x
 
-            name_x = x + 35
-            if name_x >= dest_x:
+            name_text, name_x = _clip_left(player['abbr_name'], x + 35, NAME_CHAR_WIDTH, dest_x)
+            if name_text:
                 graphics.DrawText(canvas, font, name_x, 15,
-                                  rbg(Colors.WHITE.value), player['abbr_name'])
-            pos_x = x + 35
-            if pos_x >= dest_x:
+                                  rbg(Colors.WHITE.value), name_text)
+
+            pos_text, pos_x = _clip_left(player['position'], x + 35, SMALL_CHAR_WIDTH, dest_x)
+            if pos_text:
                 graphics.DrawText(canvas, font_small, pos_x, 25,
-                                  rbg(Colors.WHITE.value), player['position'])
+                                  rbg(Colors.WHITE.value), pos_text)
 
             if player['injury_status'] and player['injury_body_part']:
-                status_x = x + 50
-                if status_x >= dest_x:
+                status_text, status_x = _clip_left(
+                    f"{str(player['injury_status'])} - ", x + 50, SMALL_CHAR_WIDTH, dest_x)
+                if status_text:
                     graphics.DrawText(canvas, font_small, status_x, 25,
-                                    rbg(Colors.RED.value), f"{str(player['injury_status'])} - ")
-                part_x = x + 70
-                if part_x >= dest_x:
+                                    rbg(Colors.RED.value), status_text)
+
+                part_text, part_x = _clip_left(
+                    str(player["injury_body_part"]), x + 70, SUPER_SMALL_CHAR_WIDTH, dest_x)
+                if part_text:
                     graphics.DrawText(canvas, font_super_small, part_x, 25,
-                                    rbg(Colors.RED.value), str(player["injury_body_part"]))
+                                    rbg(Colors.RED.value), part_text)
 
             # # if the time is shown it should be split between lines
             # # if not, just display the status
