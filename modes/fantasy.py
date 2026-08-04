@@ -1,8 +1,10 @@
+import os
+import tempfile
 import requests
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont, BdfFontFile
 from time import time
 from rgbmatrix import graphics
-from vars import PANEL_HEIGHT, PANEL_WIDTH, GAME_WIDTH, DIVIDER_COLOR, Colors, font, font_small, font_super_small
+from vars import PANEL_HEIGHT, PANEL_WIDTH, GAME_WIDTH, DIVIDER_COLOR, Colors, font, font_small, font_super_small, ASSET_DIR
 
 players = {
     "team1": [],
@@ -19,10 +21,29 @@ SCROLL_REGION_X = STATIC_CARD_WIDTH
 SCROLL_REGION_WIDTH = PANEL_WIDTH - STATIC_CARD_WIDTH
 
 # BDF fonts here are fixed-width bitmap fonts named "<char_width>x<char_height>.bdf"
-NAME_CHAR_WIDTH = 7  # 7x13.bdf
 SMALL_CHAR_WIDTH = 5   # 5x7.bdf
 SUPER_SMALL_CHAR_WIDTH = 4  # 4x6.bdf
 STATIC_CARD_MARGIN = 4
+
+_pil_font_cache = {}
+
+def _pil_font(bdf_filename):
+    """Load a .bdf bitmap font as a PIL ImageFont, so player text can be
+    drawn directly into the same virtual PIL canvas used for logos. That way
+    it goes through the exact same blit_slice() pixel copy/clip as the logos,
+    instead of being drawn separately onto the live matrix canvas."""
+    if bdf_filename not in _pil_font_cache:
+        bdf_path = os.path.join(ASSET_DIR, "fonts", bdf_filename)
+        cache_base = os.path.join(tempfile.gettempdir(), f"scoreboard_pilfont_{bdf_filename}")
+        if not os.path.exists(cache_base + ".pil"):
+            with open(bdf_path, "rb") as f:
+                BdfFontFile.BdfFontFile(f).save(cache_base)
+        _pil_font_cache[bdf_filename] = ImageFont.load(cache_base + ".pil")
+    return _pil_font_cache[bdf_filename]
+
+NAME_PIL_FONT = _pil_font("7x13.bdf")
+SMALL_PIL_FONT = _pil_font("5x7.bdf")
+SUPER_SMALL_PIL_FONT = _pil_font("4x6.bdf")
 
 scroll_x = 0
 scroll_speed = 1
@@ -120,82 +141,22 @@ def draw_static_card(canvas, team):
     for row in range(PANEL_HEIGHT):
         canvas.SetPixel(STATIC_CARD_WIDTH - 1, row, r, b, g)
 
-def _clip_left(text, x, char_width, boundary):
-    """Trim whole characters off the left of text that fall entirely before
-    boundary, so a string scrolling left erases character-by-character at the
-    boundary instead of vanishing all at once. Returns (text, x) to draw, or
-    (None, x) if nothing is left to show."""
-    if x >= boundary:
-        return text, x
-    if not text:
-        return None, x
-    hidden = -(-(boundary - x) // char_width)  # ceil division
-    if hidden >= len(text):
-        return None, x
-    return text[hidden:], x + hidden * char_width
-
-def draw_text_overlay(canvas, players, scroll_x, dest_x=0, width=PANEL_WIDTH):
-    total_width = GAME_WIDTH * len(players)
-
-    for i, player in enumerate(players):
-        base_x = (i * GAME_WIDTH) - scroll_x
-
-        # draw twice to handle the wrap-around copy
-        for wrap in [0, total_width]:
-            x = base_x + wrap
-
-            # cull slots fully off the visible region
-            if x + GAME_WIDTH < 0 or x >= width:
-                continue
-
-            x += dest_x
-
-            name_text, name_x = _clip_left(player['abbr_name'], x + 35, NAME_CHAR_WIDTH, dest_x)
-            if name_text:
-                graphics.DrawText(canvas, font, name_x, 15,
-                                  rbg(Colors.WHITE.value), name_text)
-
-            pos_text, pos_x = _clip_left(player['position'], x + 35, SMALL_CHAR_WIDTH, dest_x)
-            if pos_text:
-                graphics.DrawText(canvas, font_small, pos_x, 25,
-                                  rbg(Colors.WHITE.value), pos_text)
-
-            if player['injury_status'] and player['injury_body_part']:
-                status_text, status_x = _clip_left(
-                    f"{str(player['injury_status'])} - ", x + 50, SMALL_CHAR_WIDTH, dest_x)
-                if status_text:
-                    graphics.DrawText(canvas, font_small, status_x, 25,
-                                    rbg(Colors.RED.value), status_text)
-
-                part_text, part_x = _clip_left(
-                    str(player["injury_body_part"]), x + 70, SUPER_SMALL_CHAR_WIDTH, dest_x)
-                if part_text:
-                    graphics.DrawText(canvas, font_super_small, part_x, 25,
-                                    rbg(Colors.RED.value), part_text)
-
-            # # if the time is shown it should be split between lines
-            # # if not, just display the status
-            # if "AM" in game["status"] or "PM" in game["status"]:
-            #     game_status_split = game["status"].split("-")
-            #     date = game_status_split[0].strip()
-            #     time = game_status_split[1].strip()
-
-            #     graphics.DrawText(canvas, font_small, x + 60, 10,
-            #                     rbg(Colors.YELLOW.value), date)
-            #     graphics.DrawText(canvas, font_small, x + 60, 20,
-            #                     rbg(Colors.YELLOW.value), time)
-            #     graphics.DrawText(canvas, font_small, x + 60, 30,
-            #                     rbg(Colors.YELLOW.value), game["venue"])
-            # else:
-            #     graphics.DrawText(canvas, font_small, x + 65, 20,
-            #                     rbg(Colors.YELLOW.value), game["status"])
-
 def render_player(matrix, img, player, x_offset):
     league = "nfl"
+    draw = ImageDraw.Draw(img)
 
     team_logo = matrix.load_logo(league, player['team'])
     if team_logo:
         img.paste(team_logo.resize((28, 28)), (x_offset, 0))
+
+    # player text is baked directly into the virtual canvas (same as the logo
+    # above) so it gets clipped identically by blit_slice() when scrolled
+    draw.text((x_offset + 35, 3), player['abbr_name'], font=NAME_PIL_FONT, fill=Colors.WHITE.value)
+    draw.text((x_offset + 35, 18), player['position'], font=SMALL_PIL_FONT, fill=Colors.WHITE.value)
+
+    if player['injury_status'] and player['injury_body_part']:
+        draw.text((x_offset + 50, 18), f"{player['injury_status']} - ", font=SMALL_PIL_FONT, fill=Colors.RED.value)
+        draw.text((x_offset + 70, 19), str(player['injury_body_part']), font=SUPER_SMALL_PIL_FONT, fill=Colors.RED.value)
 
     # divider on right edge (except last slot handled by wrapping)
     for row in range(PANEL_HEIGHT):
@@ -254,7 +215,6 @@ def draw_frame(matrix):
     total_scroll_width = GAME_WIDTH * len(players[current_team])
     if virtual_canvas:
         blit_slice(matrix.canvas, virtual_canvas, scroll_x, dest_x=SCROLL_REGION_X, width=SCROLL_REGION_WIDTH)
-    draw_text_overlay(matrix.canvas, players[current_team], scroll_x, dest_x=SCROLL_REGION_X, width=SCROLL_REGION_WIDTH)
 
     tick += 1
     if tick >= frames_per_tick:

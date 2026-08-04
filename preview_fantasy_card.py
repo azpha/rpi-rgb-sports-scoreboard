@@ -96,7 +96,6 @@ def render_single_card(player, out_path, scale=6):
     img, _ = fantasy.build_canvas(matrix, "team1")
     canvas = matrix.canvas
     fantasy.blit_slice(canvas, img, 0)
-    fantasy.draw_text_overlay(canvas, [player], 0)
 
     card = canvas.img.crop((0, 0, vars.GAME_WIDTH, vars.PANEL_HEIGHT))
     card = card.resize((card.width * scale, card.height * scale), Image.NEAREST)
