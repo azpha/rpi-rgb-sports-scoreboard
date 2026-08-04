@@ -8,7 +8,15 @@ players = {
     "team1": [],
     "team2": []
 }
+team_info = {
+    "team1": {},
+    "team2": {}
+}
 last_fetch = 0
+
+STATIC_CARD_WIDTH = GAME_WIDTH
+SCROLL_REGION_X = STATIC_CARD_WIDTH
+SCROLL_REGION_WIDTH = PANEL_WIDTH - STATIC_CARD_WIDTH
 
 scroll_x = 0
 scroll_speed = 1
@@ -30,33 +38,69 @@ def fetch_data():
         data = resp.json()
 
         new_players = {"team1": [], "team2": []}
-        for player in data["team1"]["players"]:
-          new_players['team1'].append({
-              "first_name": player['first_name'],
-              "last_name": player['last_name'],
-              "abbr_name": f"{player['first_name'][0]}. {player['last_name']}",
-              "position": player['position'],
-              "team": player['team'],
-              "injury_status": "Q" if player.get('injury_status') == "Questionable" else player.get('injury_status'),
-              "injury_body_part": player.get('injury_body_part')
-          })
-        for player in data["team2"]["players"]:
-          new_players['team2'].append({
-              "first_name": player['first_name'],
-              "last_name": player['last_name'],
-              "abbr_name": f"{player['first_name'][0]}. {player['last_name']}",
-              "position": player['position'],
-              "team": player['team'],
-              "injury_status": "Q" if player.get('injury_status') == "Questionable" else player.get('injury_status'),
-              "injury_body_part": player.get('injury_body_part')
-          })
+        new_team_info = {"team1": {}, "team2": {}}
+        for key in ("team1", "team2"):
+          for player in data[key]["players"]:
+            new_players[key].append({
+                "first_name": player['first_name'],
+                "last_name": player['last_name'],
+                "abbr_name": f"{player['first_name'][0]}. {player['last_name']}",
+                "position": player['position'],
+                "team": player['team'],
+                "injury_status": "Q" if player.get('injury_status') == "Questionable" else player.get('injury_status'),
+                "injury_body_part": player.get('injury_body_part')
+            })
 
-        return new_players
+          owner = data[key].get("owner") or {}
+          metadata = owner.get("metadata") or {}
+          new_team_info[key] = {
+              "name": metadata.get("team_name") or owner.get("display_name") or key.upper(),
+              "points": data[key].get("points"),
+          }
+
+        return new_players, new_team_info
     except Exception as e:
         print(f"[fantasy] fetch error: {e}")
-        return None
+        return None, None
 
-def draw_text_overlay(canvas, players, scroll_x):
+def draw_static_card(canvas, team):
+    """Draw a fixed, non-scrolling card for the given team into the leftmost
+    STATIC_CARD_WIDTH pixels of the canvas."""
+    info = team_info.get(team, {})
+    name = info.get("name") or team.upper()
+    points = info.get("points")
+
+    label = "TEAM 1" if team == "team1" else "TEAM 2"
+    graphics.DrawText(canvas, font_small, 4, 8, rbg(Colors.YELLOW.value), label)
+
+    # wrap the team name across up to 2 lines to fit the card width
+    words = name.split(" ")
+    lines = []
+    current = ""
+    for word in words:
+        trial = f"{current} {word}".strip()
+        if len(trial) > 14 and current:
+            lines.append(current)
+            current = word
+        else:
+            current = trial
+    if current:
+        lines.append(current)
+
+    y = 17
+    for line in lines[:2]:
+        graphics.DrawText(canvas, font_super_small, 4, y, rbg(Colors.WHITE.value), line)
+        y += 7
+
+    if points is not None:
+        graphics.DrawText(canvas, font_small, 4, 30, rbg(Colors.RED.value), f"{points:.1f}")
+
+    # divider on right edge of the static card
+    r, g, b = DIVIDER_COLOR
+    for row in range(PANEL_HEIGHT):
+        canvas.SetPixel(STATIC_CARD_WIDTH - 1, row, r, b, g)
+
+def draw_text_overlay(canvas, players, scroll_x, dest_x=0, width=PANEL_WIDTH):
     total_width = GAME_WIDTH * len(players)
 
     for i, player in enumerate(players):
@@ -66,9 +110,11 @@ def draw_text_overlay(canvas, players, scroll_x):
         for wrap in [0, total_width]:
             x = base_x + wrap
 
-            # cull slots fully off screen
-            if x + GAME_WIDTH < 0 or x >= PANEL_WIDTH:
+            # cull slots fully off the visible region
+            if x + GAME_WIDTH < 0 or x >= width:
                 continue
+
+            x += dest_x
 
             graphics.DrawText(canvas, font, x + 35, 15,
                               rbg(Colors.WHITE.value), player['abbr_name'])
@@ -122,21 +168,24 @@ def build_canvas(matrix, team):
 
     return img, total_players
 
-def blit_slice(canvas, pil_img, x_offset):
+def blit_slice(canvas, pil_img, x_offset, dest_x=0, width=PANEL_WIDTH):
     total_width = pil_img.width
-    for x in range(PANEL_WIDTH):
+    for x in range(width):
         src_x = (x_offset + x) % total_width
         for y in range(PANEL_HEIGHT):
             r, g, b = pil_img.getpixel((src_x, y))
-            canvas.SetPixel(x, y, r, b, g)
+            canvas.SetPixel(dest_x + x, y, r, b, g)
 
 def draw_frame(matrix):
-    global players, last_fetch, virtual_canvas, virtual_dirty, scroll_x, tick
+    global players, team_info, last_fetch, virtual_canvas, virtual_dirty, scroll_x, tick
     global total_players, current_team
     now = time()
 
     if now - last_fetch > 30 or not players['team1'] or not players['team2']:
-        players = fetch_data()
+        fetched_players, fetched_team_info = fetch_data()
+        if fetched_players is not None:
+            players = fetched_players
+            team_info = fetched_team_info
         last_fetch = now
         virtual_dirty = True
 
@@ -147,18 +196,19 @@ def draw_frame(matrix):
             virtual_dirty = False
 
     matrix.canvas.Clear()
+    draw_static_card(matrix.canvas, current_team)
 
     if not len(players[current_team]) > 0:
-        graphics.DrawText(matrix.canvas, font, 10, 22, 
-                          rbg(Colors.RED.value), 
-                          "No players found")
+        graphics.DrawText(matrix.canvas, font, GAME_WIDTH + 10, 22,
+                          rbg(Colors.RED.value),
+                          "No players")
         scroll_x = tick = 0
         return matrix.canvas
 
     total_scroll_width = GAME_WIDTH * len(players[current_team])
     if virtual_canvas:
-        blit_slice(matrix.canvas, virtual_canvas, scroll_x)
-    draw_text_overlay(matrix.canvas, players[current_team], scroll_x)
+        blit_slice(matrix.canvas, virtual_canvas, scroll_x, dest_x=SCROLL_REGION_X, width=SCROLL_REGION_WIDTH)
+    draw_text_overlay(matrix.canvas, players[current_team], scroll_x, dest_x=SCROLL_REGION_X, width=SCROLL_REGION_WIDTH)
 
     tick += 1
     if tick >= frames_per_tick:
